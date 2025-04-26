@@ -10,3 +10,5 @@ import Foundation
 protocol ImageLoaderService {
     func loadImageData(from url: URL) async throws -> Data
 }
+
+

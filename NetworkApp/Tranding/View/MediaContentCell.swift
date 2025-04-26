@@ -9,8 +9,10 @@ import SwiftUI
 
 struct MediaContentCell: View {
     
-    let viewModel: MoviesViewModel
+    let viewModel: TrendingMediaViewModel
     let media: MediaItem
+    let addToFavorites: () -> ()
+    
     @State private var image: UIImage?
     
     var body: some View {
@@ -18,26 +20,41 @@ struct MediaContentCell: View {
             if let image = image {
                 Image(uiImage: image)
                     .resizable()
-                    .frame(width: 100)
-                    .cornerRadius(12)
                     .scaledToFit()
+                    .frame(width: 110)
+                    .cornerRadius(12)
             } else {
-                ProgressView()
-                    .frame(width: 100)
+                ZStack {
+                    RoundedRectangle(cornerRadius: 20)
+                        .foregroundColor(.gray)
+                        .frame(width: 100, height: 180)
+                    ProgressView()
+                        .tint(.yellow)
+                }
             }
-            VStack {
+            
+            VStack(alignment: .leading) {
                 Text(media.name ?? media.title ?? "No title")
-                    .font(.title.bold())
+                    .font(.headline.bold())
+                    
                 Text(media.originalName ?? media.originalTitle ?? "No original title")
-                    .font(.title2)
+                    .font(.subheadline)
                     .foregroundStyle(.gray)
+                
                 Text(media.releaseDate ?? media.firstAirDate ?? "")
+                    .font(.footnote)
                 
                 Spacer()
             }
-            .multilineTextAlignment(.leading)
+            
             Spacer()
+            
+            Button("Add to favorites") {
+                addToFavorites()
+            }
+            .buttonStyle(.borderedProminent)
         }
+        .padding()
         .task {
             if image == nil {
                 image = await viewModel.loadImage(from: media.posterPath ?? "")

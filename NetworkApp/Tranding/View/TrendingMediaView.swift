@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TrendingMediaView: View {
     
-    @StateObject private var viewModel = MoviesViewModel(networkService: NetworkLayer(), imageLoader: ImageLoader())
+    @StateObject private var viewModel = TrendingMediaViewModel(networkService: NetworkLayer(), imageLoader: ImageLoader())
     
     var body: some View {
         Group {
@@ -32,7 +32,11 @@ struct TrendingMediaView: View {
         ScrollView {
             LazyVStack {
                 ForEach(viewModel.mediaList, id: \.id) { media in
-                    MediaContentCell(viewModel: viewModel, media: media)
+                    MediaContentCell(viewModel: viewModel, media: media, addToFavorites:  {
+                        Task {
+                         try await  viewModel.addToFavorites(media.mediaType.rawValue, id: media.id)
+                        }
+                    })
                 }
             }
         }

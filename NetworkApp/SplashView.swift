@@ -15,6 +15,7 @@ struct SplashView: View {
             
             VStack {
                 ProgressView("Loading")
+                    .tint(.black)
                     
             }
         }

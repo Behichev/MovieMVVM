@@ -7,26 +7,48 @@
 
 import Foundation
 
+@MainActor
 class LoginViewModel: ObservableObject {
     
     @Published var username = ""
     @Published var password = ""
-    private let authService: TMDBAuthServiceProtocol
+    @Published var errorMessage: String? = nil
+    @Published var authState: AuthState = .login
+    @Published var isPasswordVisible = false
+    private let authService: TMDBAuthService
     
-    init(authService: TMDBAuthServiceProtocol) {
+    var isLoggingDisabled: Bool {
+       username.isEmpty || password.isEmpty
+    }
+    
+    init(authService: TMDBAuthService) {
         self.authService = authService
     }
     
-    func signIn() {
+    enum AuthState {
+        case login
+        case loading
+    }
+    
+    func checkValidation() {
         Task {
+            authState = .loading
+            errorMessage = nil
             do {
                 try await authService.requestToken()
                 try await authService.userAuthorization(with: username, password)
                 try await authService.createSession()
+                onLoginSuccess?()
+                
+            } catch let authError as NetworkError {
+                authState = .login
+                errorMessage = authError.localizedDescription
             } catch {
-                print(error.localizedDescription)
+                authState = .login
+                errorMessage = String(describing: error)
                 throw error
             }
         }
     }
+    
 }
