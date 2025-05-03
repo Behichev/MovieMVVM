@@ -9,7 +9,7 @@ import Foundation
 
 protocol TMDBAuthService {
     func requestToken() async throws
-    func userAuthorization(with username: String, _ password: String) async throws
+    func userAuthorization(with credentials: Credentials) async throws
     func createSession() async throws
     func fetchUser(with apiKey: String, sessionID: String) async throws
     func deleteSession(_ apiKey: String, _ sessionID: String) async throws
@@ -19,7 +19,7 @@ final class AccountService: TMDBAuthService {
 
     enum AuthEndpoint: Endpoint {
         case newToken(apiKey: String)
-        case validateWithLogin(apiKey: String, requestToken: String, username: String, password: String)
+        case validateWithLogin(apiKey: String, requestToken: String, credentials: Credentials)
         case newSession(apiKey: String, sessionID: String)
         case validation(apiKey: String, sessionID: String)
         case deleteUser(apiKey: String, sessionID: String)
@@ -42,7 +42,7 @@ final class AccountService: TMDBAuthService {
         var headers: [String : String]? {
             switch self {
             case .newToken(let apiKey),
-                    .validateWithLogin(let apiKey, _, _, _),
+                    .validateWithLogin(let apiKey, _, _),
                     .newSession(let apiKey, _), .deleteUser(let apiKey, _):
                 return ["Content-Type": "application/json",
                         "Authorization": "Bearer \(apiKey)"]
@@ -53,10 +53,10 @@ final class AccountService: TMDBAuthService {
         
         var body: Parameters? {
             switch self {
-            case .validateWithLogin(_, let requestToken, let username, let password):
+            case .validateWithLogin(_, let requestToken, let credentials):
                 return [
-                    "username": username,
-                    "password": password,
+                    "username": credentials.username,
+                    "password": credentials.password,
                     "request_token": requestToken
                 ]
             case .newSession(_, let sessionID):
@@ -87,7 +87,7 @@ final class AccountService: TMDBAuthService {
         var queryItems: [URLQueryItem]? {
             switch self {
             case .newToken(_),
-                    .validateWithLogin(_, _, _, _),
+                    .validateWithLogin(_, _, _),
                     .newSession(_, _), .deleteUser(_, _):
                 return nil
             case .validation(let apiKey, sessionID: let SessionId):
@@ -117,8 +117,8 @@ final class AccountService: TMDBAuthService {
         }
     }
     
-    func userAuthorization(with username: String, _ password: String) async throws {
-        authEndpoint = .validateWithLogin(apiKey: Constants.APIKeys.token.rawValue, requestToken: token?.requestToken ?? "", username: username, password: password)
+    func userAuthorization(with credentials: Credentials) async throws {
+        authEndpoint = .validateWithLogin(apiKey: Constants.APIKeys.token.rawValue, requestToken: token?.requestToken ?? "", credentials: credentials)
             guard let authEndpoint else { return }
             do {
                 try await networkService.performPostRequest(from: authEndpoint)
@@ -134,7 +134,7 @@ final class AccountService: TMDBAuthService {
         guard let authEndpoint else { return }
         do {
             let token: SessionModel = try await networkService.performRequest(from: authEndpoint)
-            KeychainManager.save(token.sessionId, forKey: "currentSessionID")
+            KeychainManager.save(token.sessionId, forKey: Constants.KeychainKeys.session.rawValue)
         } catch {
             throw error
         }
@@ -144,7 +144,8 @@ final class AccountService: TMDBAuthService {
         authEndpoint = .validation(apiKey: apiKey, sessionID: sessionID)
         guard let authEndpoint else { return }
         do {
-            let _: Account = try await networkService.performRequest(from: authEndpoint)
+            let acc: Account = try await networkService.performRequest(from: authEndpoint)
+            KeychainManager.save(acc.id, forKey: Constants.KeychainKeys.userID.rawValue)
         } catch {
             throw error
         }

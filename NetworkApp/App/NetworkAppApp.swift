@@ -11,6 +11,8 @@ import SwiftUI
 struct NetworkAppApp: App {
 
     @StateObject var authentication: Authentication
+    private var networkService: NetworkService = NetworkLayer()
+    private var imageService: ImageLoaderService = TMDBImageLoader()
     
     init() {
         let authService = AccountService()
@@ -21,7 +23,7 @@ struct NetworkAppApp: App {
         WindowGroup {
             Group {
                 if authentication.isAuthenticated {
-                    MainView()
+                    TabBarView(networkService: networkService, imageService: imageService)
                         .environmentObject(authentication)
                 } else {
                     LoginView(authService: authentication.authService)

@@ -18,7 +18,7 @@ enum HTTPMethods: String {
 enum NetworkError: Error, LocalizedError {
     case invalidCredentials
     case serverError(statusCode: Int)
-
+    
     var errorDescription: String? {
         switch self {
         case .invalidCredentials:
@@ -75,6 +75,7 @@ struct NetworkLayer: NetworkService {
         
         if let body {
             request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+            print(body)
         }
         
         return request
@@ -101,17 +102,17 @@ struct NetworkLayer: NetworkService {
             let (_, response) = try await session.data(for: request)
             
             guard let httpResponse = response as? HTTPURLResponse else {
-                       throw URLError(.badServerResponse)
-                   }
-
-                   switch httpResponse.statusCode {
-                   case 200..<300:
-                       return
-                   case 401:
-                       throw NetworkError.invalidCredentials
-                   default:
-                       throw NetworkError.serverError(statusCode: httpResponse.statusCode)
-                   }
+                throw URLError(.badServerResponse)
+            }
+            
+            switch httpResponse.statusCode {
+            case 200..<300:
+                return
+            case 401:
+                throw NetworkError.invalidCredentials
+            default:
+                throw NetworkError.serverError(statusCode: httpResponse.statusCode)
+            }
             
         } catch {
             throw error

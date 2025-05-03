@@ -14,14 +14,17 @@ class Authentication: ObservableObject {
     
     let authService: TMDBAuthService
     let loginVM: LoginViewModel
-    private var sessionID = KeychainManager.get(forKey: "currentSessionID", as: String.self)
     
+    private var validationTask: Task<Void, Never>? = nil
+    
+    private var sessionID = KeychainManager.get(forKey: Constants.KeychainKeys.session.rawValue, as: String.self)
+    private var userID = KeychainManager.get(forKey: Constants.KeychainKeys.userID.rawValue, as: String.self)
     
     init(authService: TMDBAuthService) {
         self.authService = authService
         self.loginVM = LoginViewModel(authService: authService)
         
-        Task {
+        validationTask = Task {
             await checkSession()
         }
     }
@@ -38,7 +41,8 @@ class Authentication: ObservableObject {
     func logout() async {
         do {
             try await authService.deleteSession(Constants.APIKeys.token.rawValue, sessionID ?? "")
-            KeychainManager.delete(forKey: "currentSessionID")
+            KeychainManager.delete(forKey: Constants.KeychainKeys.session.rawValue)
+            KeychainManager.delete(forKey: Constants.KeychainKeys.userID.rawValue)
             isAuthenticated = false
         } catch {
             isAuthenticated = true

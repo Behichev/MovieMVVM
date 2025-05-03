@@ -17,10 +17,7 @@ struct LoginView: View {
     }
     
     var body: some View {
-        Group {
             ZStack {
-                Color.black.opacity(0.8)
-                    .ignoresSafeArea()
                 
                 VStack(spacing: 24) {
                     
@@ -29,7 +26,7 @@ struct LoginView: View {
                             .font(.largeTitle)
                             .fontWeight(.heavy)
                         
-                        TextField("Username", text: $viewModel.username)
+                        TextField("Username", text: $viewModel.credentials.username)
                             .padding()
                             .fontWeight(.medium)
                         
@@ -39,36 +36,45 @@ struct LoginView: View {
                         }
                         HStack {
                             if viewModel.isPasswordVisible {
-                                TextField("Password", text: $viewModel.password)
+                                TextField("Password", text: $viewModel.credentials.password)
                                     .padding()
                                     .fontWeight(.bold)
                             } else {
-                                SecureField("Password", text: $viewModel.password)
+                                SecureField("Password", text: $viewModel.credentials.password)
                                     .fontWeight(.bold)
                                     .padding()
                             }
                             Image(systemName: viewModel.isPasswordVisible ? "eye.slash.fill" : "eye.fill")
                                 .onTapGesture {
-                                    viewModel.isPasswordVisible.toggle()
+                                    withAnimation {
+                                        viewModel.isPasswordVisible.toggle()
+                                    }
+                                    
                                 }
                         }
                     }
+                    .textInputAutocapitalization(.never)
                     .disableAutocorrection(true)
                     .textFieldStyle(.roundedBorder)
                     .padding()
-                    .background {
-                        RoundedRectangle(cornerRadius: 10)
-                            .foregroundStyle(.yellow)
-                    }
                     
                     Button("Sign In") {
-                        viewModel.checkValidation()
+                        Task {
+                            do {
+                                try await viewModel.checkValidation()
+                                await authentication.checkSession()
+                                authentication.isAuthenticated = true
+                            } catch {
+                                viewModel.authState = .login
+                                throw error
+                            }
+                            
+                        }
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(viewModel.isLoggingDisabled)
-                    .opacity((viewModel.username.isEmpty || viewModel.password.isEmpty) ? 0.5 : 1.0)
+                    .opacity(viewModel.isLoggingDisabled ? 0.5 : 1.0)
                 }
-                .padding()
             }
             .overlay {
                 if viewModel.authState == .loading {
@@ -85,7 +91,7 @@ struct LoginView: View {
                     }
                 }
             }
-        }
+        
     }
 }
 

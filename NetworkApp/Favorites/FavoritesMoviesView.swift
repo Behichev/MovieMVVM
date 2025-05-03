@@ -8,11 +8,49 @@
 import SwiftUI
 
 struct FavoritesMoviesView: View {
+    
+    @StateObject var viewModel: FavoritesViewModel
+    
+    init(networkService: NetworkService, imageService: ImageLoaderService) {
+        _viewModel = StateObject(wrappedValue: FavoritesViewModel(networkService: networkService, imageService: imageService))
+    }
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        NavigationView {
+            Group {
+                if viewModel.isLoading {
+                    ProgressView("Loading...")
+                } else if let error = viewModel.errorMessage {
+                    Text("Error: \(error)")
+                        .foregroundColor(.blue)
+                } else {
+                    mediaListView
+                }
+            }
+            .navigationTitle("Favorites")
+        }
+        .task {
+            await viewModel.fetchFavorites()
+        }
+    }
+    
+    var mediaListView: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(viewModel.favoritesMedia, id: \.id) { media in
+                    MediaPreviewCell(media: media) { url in
+                        await viewModel.loadImage(from: url)
+                    } onFavoritesTapped: {
+                        Task {
+                            try await viewModel.deleteFromFavorites(media)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
 #Preview {
-    FavoritesMoviesView()
+    FavoritesMoviesView(networkService: NetworkLayer(), imageService: TMDBImageLoader())
 }

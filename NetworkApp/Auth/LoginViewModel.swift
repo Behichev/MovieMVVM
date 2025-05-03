@@ -10,15 +10,15 @@ import Foundation
 @MainActor
 class LoginViewModel: ObservableObject {
     
-    @Published var username = ""
-    @Published var password = ""
+    @Published var credentials = Credentials()
     @Published var errorMessage: String? = nil
     @Published var authState: AuthState = .login
     @Published var isPasswordVisible = false
+    
     private let authService: TMDBAuthService
     
     var isLoggingDisabled: Bool {
-       username.isEmpty || password.isEmpty
+        credentials.username.isEmpty || credentials.password.isEmpty
     }
     
     init(authService: TMDBAuthService) {
@@ -30,16 +30,13 @@ class LoginViewModel: ObservableObject {
         case loading
     }
     
-    func checkValidation() {
-        Task {
+    func checkValidation() async throws {
             authState = .loading
             errorMessage = nil
             do {
                 try await authService.requestToken()
-                try await authService.userAuthorization(with: username, password)
+                try await authService.userAuthorization(with: credentials)
                 try await authService.createSession()
-                onLoginSuccess?()
-                
             } catch let authError as NetworkError {
                 authState = .login
                 errorMessage = authError.localizedDescription
@@ -48,7 +45,6 @@ class LoginViewModel: ObservableObject {
                 errorMessage = String(describing: error)
                 throw error
             }
-        }
     }
     
 }

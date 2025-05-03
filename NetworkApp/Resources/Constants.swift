@@ -9,7 +9,12 @@ import Foundation
 
 enum Constants {
     enum APIKeys: String {
-        case key = "1"
-        case token = "2"
+        case key = "****"
+        case token = "***"
+    }
+    
+    enum KeychainKeys: String {
+        case session = "currentSessionID"
+        case userID = "userID" 
     }
 }

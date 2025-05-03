@@ -1,5 +1,5 @@
 //
-//  MainView.swift
+//  TabBarView.swift
 //  NetworkApp
 //
 //  Created by Ivan Behichev on 24.04.2025.
@@ -7,16 +7,24 @@
 
 import SwiftUI
 
-struct MainView: View {
+struct TabBarView: View {
+    
+    private let networkService: NetworkService
+    private let imageService: ImageLoaderService
+    
+    init(networkService: NetworkService, imageService: ImageLoaderService) {
+        self.networkService = networkService
+        self.imageService = imageService
+    }
     
     var body: some View {
         TabView {
-                TrendingMediaView()
+            TrendingMediaView(networkService: networkService, imageService: imageService)
                 .tabItem {
                     Label("Tranding", systemImage: "chart.line.uptrend.xyaxis.circle.fill")
                 }
                 
-            FavoritesMoviesView()
+            FavoritesMoviesView(networkService: networkService, imageService: imageService)
                 .tabItem {
                     Label("Favorites", systemImage: "star.circle.fill")
                 }
@@ -30,5 +38,5 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    TabBarView(networkService: NetworkLayer(), imageService: TMDBImageLoader())
 }
