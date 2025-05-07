@@ -57,7 +57,7 @@ Carthage/Build/
 # https://docs.fastlane.tools/best-practices/source-control/#source-control
 
 # Secret keys (Don't push!)
-Config/Secrets.xcconfig
+NetworkApp/Config/Secrets.xcconfig
 
 fastlane/report.xml
 fastlane/Preview.html
