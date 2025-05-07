@@ -9,10 +9,23 @@ import SwiftUI
 
 @main
 struct NetworkAppApp: App {
+    
+    enum AppState {
+        case login
+        case authenticated
+    }
 
     @StateObject var authentication: Authentication
     private var networkService: NetworkService = NetworkLayer()
     private var imageService: ImageLoaderService = TMDBImageLoader()
+    
+    private var appState: AppState {
+        if authentication.isAuthenticated {
+            return .authenticated
+        } else {
+            return .login
+        }
+    }
     
     init() {
         let authService = AccountService()
@@ -22,11 +35,12 @@ struct NetworkAppApp: App {
     var body: some Scene {
         WindowGroup {
             Group {
-                if authentication.isAuthenticated {
-                    TabBarView(networkService: networkService, imageService: imageService)
-                        .environmentObject(authentication)
-                } else {
+                switch appState {
+                case .login:
                     LoginView(authService: authentication.authService)
+                        .environmentObject(authentication)
+                case .authenticated:
+                    TabBarView(networkService: networkService, imageService: imageService)
                         .environmentObject(authentication)
                 }
             }

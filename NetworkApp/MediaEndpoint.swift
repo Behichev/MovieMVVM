@@ -41,7 +41,7 @@ enum MediaEndpoint: Endpoint {
             [
                 "accept": "application/json",
                 "content-type": "application/json",
-                "Authorization": "Bearer \(Constants.APIKeys.token.rawValue)"
+                "Authorization": "Bearer \(Constants.APIKeys.token)"
             ]
         }
     }

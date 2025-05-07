@@ -109,7 +109,7 @@ final class AccountService: TMDBAuthService {
     
     func requestToken() async throws {
         do {
-            authEndpoint = .newToken(apiKey: Constants.APIKeys.token.rawValue)
+            authEndpoint = .newToken(apiKey: Constants.APIKeys.token)
             guard let authEndpoint else { return }
             token = try await networkService.performRequest(from: authEndpoint)
         } catch {
@@ -118,7 +118,7 @@ final class AccountService: TMDBAuthService {
     }
     
     func userAuthorization(with credentials: Credentials) async throws {
-        authEndpoint = .validateWithLogin(apiKey: Constants.APIKeys.token.rawValue, requestToken: token?.requestToken ?? "", credentials: credentials)
+        authEndpoint = .validateWithLogin(apiKey: Constants.APIKeys.token, requestToken: token?.requestToken ?? "", credentials: credentials)
             guard let authEndpoint else { return }
             do {
                 try await networkService.performPostRequest(from: authEndpoint)
@@ -130,7 +130,7 @@ final class AccountService: TMDBAuthService {
     }
     
     func createSession() async throws {
-        authEndpoint = .newSession(apiKey: Constants.APIKeys.token.rawValue, sessionID: token?.requestToken ?? "")
+        authEndpoint = .newSession(apiKey: Constants.APIKeys.token, sessionID: token?.requestToken ?? "")
         guard let authEndpoint else { return }
         do {
             let token: SessionModel = try await networkService.performRequest(from: authEndpoint)

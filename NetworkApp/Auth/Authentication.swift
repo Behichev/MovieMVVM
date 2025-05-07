@@ -31,7 +31,7 @@ class Authentication: ObservableObject {
     
     func checkSession() async {
         do {
-            try await authService.fetchUser(with: Constants.APIKeys.key.rawValue, sessionID: sessionID ?? "")
+            try await authService.fetchUser(with: Constants.APIKeys.key, sessionID: sessionID ?? "")
             isAuthenticated = true
         } catch {
             isAuthenticated = false
@@ -40,7 +40,7 @@ class Authentication: ObservableObject {
     
     func logout() async {
         do {
-            try await authService.deleteSession(Constants.APIKeys.token.rawValue, sessionID ?? "")
+            try await authService.deleteSession(Constants.APIKeys.token, sessionID ?? "")
             KeychainManager.delete(forKey: Constants.KeychainKeys.session.rawValue)
             KeychainManager.delete(forKey: Constants.KeychainKeys.userID.rawValue)
             isAuthenticated = false

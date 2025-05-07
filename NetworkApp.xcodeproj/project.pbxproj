@@ -29,9 +29,22 @@
 		33D934BB2DA729F200F395F3 /* NetworkAppUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = NetworkAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		33E126B52DCB64BE00895B6E /* Exceptions for "NetworkApp" folder in "NetworkApp" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 33D934A32DA729F000F395F3 /* NetworkApp */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		33D934A62DA729F000F395F3 /* NetworkApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				33E126B52DCB64BE00895B6E /* Exceptions for "NetworkApp" folder in "NetworkApp" target */,
+			);
 			path = NetworkApp;
 			sourceTree = "<group>";
 		};
@@ -392,6 +405,8 @@
 		};
 		33D934C62DA729F200F395F3 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 33D934A62DA729F000F395F3 /* NetworkApp */;
+			baseConfigurationReferenceRelativePath = Config/Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -400,6 +415,9 @@
 				DEVELOPMENT_TEAM = 75DSYQ758V;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NetworkApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "TMDB ";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -421,6 +439,8 @@
 		};
 		33D934C72DA729F200F395F3 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 33D934A62DA729F000F395F3 /* NetworkApp */;
+			baseConfigurationReferenceRelativePath = Config/Secrets.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -429,6 +449,9 @@
 				DEVELOPMENT_TEAM = 75DSYQ758V;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = NetworkApp/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "TMDB ";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.entertainment";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

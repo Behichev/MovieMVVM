@@ -8,11 +8,10 @@
 import Foundation
 
 @MainActor
-class LoginViewModel: ObservableObject {
+final class LoginViewModel: ObservableObject {
     
     @Published var credentials = Credentials()
-    @Published var errorMessage: String? = nil
-    @Published var authState: AuthState = .login
+    @Published var authState: AuthViewState = .login
     @Published var isPasswordVisible = false
     
     private let authService: TMDBAuthService
@@ -21,30 +20,38 @@ class LoginViewModel: ObservableObject {
         credentials.username.isEmpty || credentials.password.isEmpty
     }
     
+    var passwordThumbImageName: String {
+        isPasswordVisible ? "eye.slash.fill" : "eye.fill"
+    }
+    
     init(authService: TMDBAuthService) {
         self.authService = authService
     }
     
-    enum AuthState {
+    enum AuthViewState {
         case login
         case loading
+        case error(errorMessage: String)
     }
     
     func checkValidation() async throws {
-            authState = .loading
-            errorMessage = nil
-            do {
-                try await authService.requestToken()
-                try await authService.userAuthorization(with: credentials)
-                try await authService.createSession()
-            } catch let authError as NetworkError {
-                authState = .login
-                errorMessage = authError.localizedDescription
-            } catch {
-                authState = .login
-                errorMessage = String(describing: error)
-                throw error
-            }
+        authState = .loading
+        do {
+            try await authService.requestToken()
+            try await authService.userAuthorization(with: credentials)
+            try await authService.createSession()
+        } catch let authError as NetworkError {
+            authState = .error(errorMessage: authError.localizedDescription)
+            await resetStateAfterDelay()
+        } catch {
+            authState = .error(errorMessage: String(describing: error))
+            await resetStateAfterDelay()
+            throw error
+        }
     }
     
+    private func resetStateAfterDelay() async {
+        try? await Task.sleep(nanoseconds: 4_000_000_000)
+        authState = .login
+    }
 }
