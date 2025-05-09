@@ -9,8 +9,13 @@ import Foundation
 
 enum Constants {
     enum APIKeys {
-        static let key: String = Bundle.main.infoDictionary?["API_KEY"] as? String ?? ""
-        static let token: String = Bundle.main.infoDictionary?["API_TOKEN"] as? String ?? ""
+        static let key: String = {
+            return Bundle.main.infoDictionary?["API_KEY"] as? String ?? "API_KEY is nil"
+        }()
+        
+        static let token: String = {
+            return Bundle.main.infoDictionary?["API_TOKEN"] as? String ?? "API_TOKEN is nil"
+        }()
     }
     
     enum KeychainKeys: String {

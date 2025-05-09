@@ -14,21 +14,25 @@ final class FavoritesViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var errorMessage: String?
     
-    private var userID = KeychainManager.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self)
+    private var userID: String
     
     let networkService: NetworkService
     let imageService: ImageLoaderService
+    let keychainService: SecureStorable
     
-    init(networkService: NetworkService, imageService: ImageLoaderService) {
+    init(networkService: NetworkService, imageService: ImageLoaderService, keychainService: SecureStorable) {
         self.networkService = networkService
         self.imageService = imageService
+        self.keychainService = keychainService
+        userID = String(describing: keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self))
+        
     }
     
     func fetchFavorites() async {
         isLoading = true
         errorMessage = nil
         do {
-            let result: MediaResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: "\(userID ?? 0)"))
+            let result: MediaResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: userID))
             favoritesMedia = result.results
         } catch {
             errorMessage = error.localizedDescription
@@ -40,7 +44,7 @@ final class FavoritesViewModel: ObservableObject {
         do {
             var removeItem = item
             removeItem.mediaType = .movie
-            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: "\(userID ?? 0)", item: removeItem))
+            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: removeItem))
             favoritesMedia.removeAll(where: {$0.id == item.id})
         } catch {
             print(error)

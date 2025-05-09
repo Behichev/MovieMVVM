@@ -11,20 +11,24 @@ struct TabBarView: View {
     
     private let networkService: NetworkService
     private let imageService: ImageLoaderService
+    private let trendingRepository: MediaRepository
+    private let keychainService: SecureStorable
     
-    init(networkService: NetworkService, imageService: ImageLoaderService) {
+    init(networkService: NetworkService, imageService: ImageLoaderService, trendingRepository: MediaRepository, keychainService: SecureStorable) {
         self.networkService = networkService
         self.imageService = imageService
+        self.trendingRepository = trendingRepository
+        self.keychainService = keychainService
     }
     
     var body: some View {
         TabView {
-            TrendingMediaView(networkService: networkService, imageService: imageService)
+            TrendingMediaView(repository: trendingRepository)
                 .tabItem {
                     Label("Tranding", systemImage: "chart.line.uptrend.xyaxis.circle.fill")
                 }
                 
-            FavoritesMoviesView(networkService: networkService, imageService: imageService)
+            FavoritesMoviesView(networkService: networkService, imageService: imageService, keychainService: keychainService)
                 .tabItem {
                     Label("Favorites", systemImage: "star.circle.fill")
                 }
@@ -35,8 +39,4 @@ struct TabBarView: View {
                 }
         }
     }
-}
-
-#Preview {
-    TabBarView(networkService: NetworkLayer(), imageService: TMDBImageLoader())
 }

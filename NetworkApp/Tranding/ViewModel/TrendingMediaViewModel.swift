@@ -11,107 +11,59 @@ import SwiftUI
 final class TrendingMediaViewModel: ObservableObject {
     
     @Published var media: [MediaItem] = []
-    @Published var isLoading = false
-    @Published var errorMessage: String?
+    @Published var viewState: TrendingMediaViewState = .loading
     
-    private var favoriteMoviesResult: MediaResult?
-    private var trendingMediaResult: MediaResult?
+    private let repository: MediaRepository
     
-    private let networkService: NetworkService
-    private let imageLoader: ImageLoaderService
-    
-    private var favoriteMedia: [MediaItem] = []
-    private var userID = KeychainManager.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self)
-    
-    init(networkService: NetworkService, imageLoader: ImageLoaderService) {
-        self.networkService = networkService
-        self.imageLoader = imageLoader
+    init(repository: MediaRepository) {
+        self.repository = repository
     }
     
-    func fetchMovies() async {
-        isLoading = true
-        errorMessage = nil
+    enum TrendingMediaViewState {
+        case loading
+        case success
+        case error(message: String)
+    }
+    
+    func loadMedia() async throws {
+        viewState = .loading
         do {
-            trendingMediaResult = try await networkService.performRequest(from: MediaEndpoint.trending(mediaItem: .movie, timeWindow: TimeWindow.week.rawValue))
-            guard let trendingMediaResult else { return }
-            media = trendingMediaResult.results
-            try await fetchFavoriteMedia()
-            
-            updateFavoriteList()
+            media = try await repository.fetchMedia()
+            viewState = .success
         } catch {
-            errorMessage = error.localizedDescription
+            viewState = .error(message: error.localizedDescription)
         }
-        isLoading = false
     }
     
-    func handleFavorite(_ isFavorite: Bool, media: MediaItem) async throws {
-        if isFavorite {
-            try await removeFromFavorites(media)
-        } else {
-            try await addToFavorites(media)
-        }
-        updateFavoriteList()
-    }
-    
-   private func addToFavorites(_ item: MediaItem) async throws {
+    func favoritesToggle(_ media: MediaItem) async throws {
         do {
-            try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: "\(userID)", item: item))
-            if let index = favoriteMedia.firstIndex(where: {$0.id == item.id }) {
-                favoriteMedia[index].isInFavorites = true
+            if media.isInFavorites ?? false {
+                try await repository.deleteFromFavorites(media)
             } else {
-                var newItem = item
-                newItem.isInFavorites = true
-                favoriteMedia.append(newItem)
+                try await repository.addToFavorite(media)
             }
         } catch {
+            viewState = .error(message: error.localizedDescription)
             throw error
         }
     }
     
-   private func removeFromFavorites(_ item: MediaItem) async throws {
+    func setImage(_ path: String) async throws -> UIImage? {
         do {
-            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: "\(userID)", item: item))
-            
-            if let index = favoriteMedia.firstIndex(where: { $0.id == item.id }) {
-                favoriteMedia[index].isInFavorites = false
-                favoriteMedia.remove(at: index)
-            }
+            let data = try await repository.loadImage(path)
+            let image = UIImage(data: data)
+            return image
         } catch {
+            viewState = .error(message: error.localizedDescription)
             throw error
         }
     }
     
-    private func fetchFavoriteMedia() async throws {
+    func refreshFavoriteStatuses() async {
         do {
-            favoriteMoviesResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: "\(userID)"))
-            guard let favoriteMoviesResult else { return }
-            favoriteMedia = favoriteMoviesResult.results
-            for (index, _) in favoriteMedia.enumerated() {
-                favoriteMedia[index].isInFavorites = true
-            }
+            try await repository.fetchFavorites()
         } catch {
-            throw error
-        }
-    }
-    
-    private func updateFavoriteList() {
-        for (index, item) in media.enumerated() {
-            if let _ = favoriteMedia.first(where: { $0.id == item.id }) {
-                media[index].isInFavorites = true
-            } else {
-                media[index].isInFavorites = false
-            }
-        }
-    }
-    
-    func loadImage(from path: String) async -> UIImage? {
-        do {
-            let url = try imageLoader.prepareImagePath(from: path)
-            let data = try await imageLoader.loadImageData(from: url)
-            return UIImage(data: data)
-        } catch {
-            print("Failed to load image: \(error)")
-            return nil
+            viewState = .error(message: error.localizedDescription)
         }
     }
 }

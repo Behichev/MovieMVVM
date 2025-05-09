@@ -16,8 +16,11 @@ struct NetworkAppApp: App {
     }
 
     @StateObject var authentication: Authentication
+    
     private var networkService: NetworkService = NetworkLayer()
     private var imageService: ImageLoaderService = TMDBImageLoader()
+    private var trendingRepository: TrendingMediaRepository
+    private var keychainService = KeychainManager()
     
     private var appState: AppState {
         if authentication.isAuthenticated {
@@ -28,9 +31,11 @@ struct NetworkAppApp: App {
     }
     
     init() {
-        let authService = AccountService()
-        _authentication = StateObject(wrappedValue: Authentication(authService: authService))
-    }
+           let authService = AccountService(keychainService: keychainService)
+           let auth = Authentication(authService: authService, keychainService: keychainService)
+           _authentication = StateObject(wrappedValue: auth)
+           trendingRepository = TrendingMediaRepository(networkService: networkService, keychainService: keychainService, imageLoaderService: imageService)
+       }
     
     var body: some Scene {
         WindowGroup {
@@ -40,7 +45,7 @@ struct NetworkAppApp: App {
                     LoginView(authService: authentication.authService)
                         .environmentObject(authentication)
                 case .authenticated:
-                    TabBarView(networkService: networkService, imageService: imageService)
+                    TabBarView(networkService: networkService, imageService: imageService, trendingRepository: trendingRepository, keychainService: keychainService)
                         .environmentObject(authentication)
                 }
             }

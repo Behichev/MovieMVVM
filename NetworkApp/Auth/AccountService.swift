@@ -102,9 +102,11 @@ final class AccountService: TMDBAuthService {
     private let networkService: NetworkService
     private var authEndpoint: AuthEndpoint?
     private var token: TMDBToken?
+    private let keychainService: SecureStorable
     
-    init(networkService: NetworkService = NetworkLayer()) {
+    init(networkService: NetworkService = NetworkLayer(), keychainService: SecureStorable) {
         self.networkService = networkService
+        self.keychainService = keychainService
     }
     
     func requestToken() async throws {
@@ -113,6 +115,8 @@ final class AccountService: TMDBAuthService {
             guard let authEndpoint else { return }
             token = try await networkService.performRequest(from: authEndpoint)
         } catch {
+            print("token might be here: \(Constants.APIKeys.token)")
+            print("token error")
             throw error
         }
     }
@@ -125,6 +129,7 @@ final class AccountService: TMDBAuthService {
             } catch NetworkError.invalidCredentials {
                 throw NetworkError.invalidCredentials
             } catch {
+                print("auth error")
                 throw error
             }
     }
@@ -134,8 +139,9 @@ final class AccountService: TMDBAuthService {
         guard let authEndpoint else { return }
         do {
             let token: SessionModel = try await networkService.performRequest(from: authEndpoint)
-            KeychainManager.save(token.sessionId, forKey: Constants.KeychainKeys.session.rawValue)
+            keychainService.save(token.sessionId, forKey: Constants.KeychainKeys.session.rawValue)
         } catch {
+            print("Session error")
             throw error
         }
     }
@@ -145,7 +151,7 @@ final class AccountService: TMDBAuthService {
         guard let authEndpoint else { return }
         do {
             let acc: Account = try await networkService.performRequest(from: authEndpoint)
-            KeychainManager.save(acc.id, forKey: Constants.KeychainKeys.userID.rawValue)
+            keychainService.save(acc.id, forKey: Constants.KeychainKeys.userID.rawValue)
         } catch {
             throw error
         }

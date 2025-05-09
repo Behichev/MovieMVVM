@@ -11,8 +11,8 @@ struct FavoritesMoviesView: View {
     
     @StateObject var viewModel: FavoritesViewModel
     
-    init(networkService: NetworkService, imageService: ImageLoaderService) {
-        _viewModel = StateObject(wrappedValue: FavoritesViewModel(networkService: networkService, imageService: imageService))
+    init(networkService: NetworkService, imageService: ImageLoaderService, keychainService: SecureStorable) {
+        _viewModel = StateObject(wrappedValue: FavoritesViewModel(networkService: networkService, imageService: imageService, keychainService: keychainService))
     }
     
     var body: some View {
@@ -49,8 +49,4 @@ struct FavoritesMoviesView: View {
             }
         }
     }
-}
-
-#Preview {
-    FavoritesMoviesView(networkService: NetworkLayer(), imageService: TMDBImageLoader())
 }

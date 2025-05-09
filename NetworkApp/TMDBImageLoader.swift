@@ -2,7 +2,7 @@
 //  TMDBImageLoader.swift
 //  NetworkApp
 //
-//  Created by Ivan Behichev on 17.04.2025.
+//  Created by Ivan Behichev on 09.05.2025.
 //
 
 import Foundation

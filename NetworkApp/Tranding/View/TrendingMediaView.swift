@@ -11,46 +11,59 @@ struct TrendingMediaView: View {
     
     @StateObject private var viewModel: TrendingMediaViewModel
     
-    init(networkService: NetworkService, imageService: ImageLoaderService) {
-        _viewModel = StateObject(wrappedValue: TrendingMediaViewModel(networkService: networkService, imageLoader: imageService))
+    init(repository: MediaRepository) {
+        _viewModel = StateObject(wrappedValue: TrendingMediaViewModel(repository: repository))
     }
     
     var body: some View {
         NavigationView {
             Group {
-                if viewModel.isLoading {
-                    ProgressView("Loading...")
-                } else if let error = viewModel.errorMessage {
-                    Text("Error: \(error)")
-                        .foregroundColor(.blue)
-                } else {
+                switch viewModel.viewState {
+                case .loading:
                     mediaListView
-                }
-            }
-            .navigationTitle("Trending")
-        }
-        .task {
-            await viewModel.fetchMovies()
-        }
-    }
-    
-    var mediaListView: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach(viewModel.media, id: \.id) { media in
-                    MediaPreviewCell(media: media) { url in
-                        await viewModel.loadImage(from: url)
-                    } onFavoritesTapped: {
-                        Task {
-                           try await viewModel.handleFavorite(media.isInFavorites ?? false, media: media)
+                        .overlay {
+                            LoaderView()
+                        }
+                case .success:
+                    mediaListView
+                case .error(let message):
+                    ZStack {
+                        mediaListView
+                        VStack {
+                            ErrorView(errorMessage: message)
+                                Spacer()
                         }
                     }
                 }
+            }
+            .padding()
+            .navigationTitle("Trending")
+            .task {
+                if viewModel.media.isEmpty {
+                    try? await viewModel.loadMedia()
+                }
+                
+                await viewModel.refreshFavoriteStatuses()
             }
         }
     }
 }
 
-#Preview {
-    TrendingMediaView(networkService: NetworkLayer(), imageService: TMDBImageLoader())
+private extension TrendingMediaView {
+    var mediaListView: some View {
+        ScrollView {
+            LazyVStack {
+                ForEach(viewModel.media, id: \.id) { media in
+                    MediaPreviewCell(media: media) { url in
+                        try? await viewModel.setImage(url)
+                    } onFavoritesTapped: {
+                        Task {
+                           try? await viewModel.favoritesToggle(media)
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
 }

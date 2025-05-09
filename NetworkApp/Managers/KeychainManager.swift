@@ -8,9 +8,9 @@
 import Foundation
 import Security
 
-final class KeychainManager {
+final class KeychainManager: SecureStorable {
     
-    static func save<T: Codable>(_ object: T, forKey key: String) {
+    func save<T: Codable>(_ object: T, forKey key: String) {
         let encoder = JSONEncoder()
         guard let data = try? encoder.encode(object) else { return }
         
@@ -24,7 +24,7 @@ final class KeychainManager {
         let _ = SecItemAdd(query as CFDictionary, nil)
     }
     
-    static func get<T: Codable>(forKey key: String, as type: T.Type) -> T? {
+    func get<T: Codable>(forKey key: String, as type: T.Type) -> T? {
         let query: [String: Any] = [
             kSecClass as String       : kSecClassGenericPassword,
             kSecAttrAccount as String: key,
@@ -44,7 +44,7 @@ final class KeychainManager {
         return try? decoder.decode(type, from: data)
     }
     
-    static func delete(forKey key: String) {
+    func delete(forKey key: String) {
         let query: [String: Any] = [
             kSecClass as String       : kSecClassGenericPassword,
             kSecAttrAccount as String: key
