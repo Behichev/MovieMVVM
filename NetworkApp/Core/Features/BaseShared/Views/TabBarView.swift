@@ -25,21 +25,27 @@ struct TabBarView: View {
         self.userRepository = userRepository
     }
     
+    enum Assets: String {
+        case trendingImageName = "chart.line.uptrend.xyaxis.circle.fill"
+        case favoritesImageName = "star.circle.fill"
+        case userImageName = "person.crop.circle.fill"
+    }
+    
     var body: some View {
         TabView {
             TrendingMediaView(repository: trendingRepository)
                 .tabItem {
-                    Label("Tranding", systemImage: "chart.line.uptrend.xyaxis.circle.fill")
+                    Label("Tranding", systemImage: Assets.trendingImageName.rawValue)
                 }
                 
             FavoritesMoviesView(repository: favoritesRepository)
                 .tabItem {
-                    Label("Favorites", systemImage: "star.circle.fill")
+                    Label("Favorites", systemImage: Assets.favoritesImageName.rawValue)
                 }
             
             UserView(repository: userRepository)
                 .tabItem {
-                    Label("Account", systemImage: "person.crop.circle.fill")
+                    Label("Account", systemImage: Assets.userImageName.rawValue)
                 }
         }
     }
