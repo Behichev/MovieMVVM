@@ -27,8 +27,12 @@ actor FavoritesMediaRepositoryImpl: FavoritesMediaRepository {
         do {
             let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: userID))
             favoriteMediaList = mediaResult.results
-            return favoriteMediaList
             
+            for (index, _) in favoriteMediaList.enumerated() {
+                favoriteMediaList[index].isInFavorites = true
+            }
+            
+            return favoriteMediaList
         } catch {
             throw error
         }

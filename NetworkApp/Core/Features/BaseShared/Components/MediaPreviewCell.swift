@@ -22,7 +22,7 @@ struct MediaPreviewCell: View {
                         .resizable()
                         .scaledToFit()
                         .frame(width: 110)
-                        .cornerRadius(20)
+                        .cornerRadius(Constants.Design.LayoutConstants.cornerRadius.rawValue)
                 } else {
                     skeletonImageView
                 }

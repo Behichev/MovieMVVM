@@ -24,7 +24,7 @@ enum Constants {
     }
     
     enum Design {
-        enum LayoutConstants: Double {
+        enum LayoutConstants: CGFloat {
             case cornerRadius = 20
             case defaultSpacing = 16
         }

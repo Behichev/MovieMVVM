@@ -17,7 +17,7 @@ struct UserView: View {
     }
  
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: Constants.Design.LayoutConstants.defaultSpacing.rawValue) {
             if let user = viewModel.user {
                 VStack {
                     UserAvatarView(url: viewModel.avatarURL, size: 120)
