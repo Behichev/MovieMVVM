@@ -9,46 +9,56 @@ import SwiftUI
 
 @main
 struct NetworkAppApp: App {
-    
+    //MARK: App State
     enum AppState {
         case login
         case authenticated
     }
-
-    @StateObject var authentication: Authentication
-    
-    private var networkService: NetworkService = NetworkLayer()
-    private var imageService: ImageLoaderService = TMDBImageLoader()
-    private var trendingRepository: TrendingMediaRepository
-    private var keychainService = KeychainManager()
     
     private var appState: AppState {
-        if authentication.isAuthenticated {
+        if authenticationState.isAuthenticated {
             return .authenticated
         } else {
             return .login
         }
     }
     
+    @StateObject var authenticationState: AuthenticationState
+    //MARK: Services
+    private var networkService: NetworkService = NetworkLayer()
+    private var imageService: ImageLoaderService = TMDBImageLoader()
+    private var keychainService = KeychainService()
+    //MARK: Repositories
+    private var trendingRepository: TrendingMediaRepository
+    private var favoritesRepository: FavoritesMediaRepository
+    private var authRepository: TMDBAuthRepository
+    private var userRepository: UserRepository
+    private var sessionRepository: SessionRepository
+    //MARK: Init
     init() {
-           let authService = AccountService(keychainService: keychainService)
-           let auth = Authentication(authService: authService, keychainService: keychainService)
-           _authentication = StateObject(wrappedValue: auth)
-           trendingRepository = TrendingMediaRepository(networkService: networkService, keychainService: keychainService, imageLoaderService: imageService)
-       }
-    
+        authRepository = TMDBAuthRepositoryImpl(keychainService: keychainService)
+        userRepository = TMDBUserRepositoryImpl(networkService: networkService, keychainService: keychainService)
+        sessionRepository = SessionRepositoryImpl(networkService: networkService)
+        let authenticationState = AuthenticationState(userRepository: userRepository, sessionRepository: sessionRepository, keychainService: keychainService)
+        _authenticationState = StateObject(wrappedValue: authenticationState)
+        trendingRepository = TrendingMediaRepositoryImpl(networkService: networkService, keychainService: keychainService, imageLoaderService: imageService)
+        favoritesRepository = FavoritesMediaRepositoryImpl(networkService: networkService, keychainService: keychainService, imageService: imageService)
+        authRepository = TMDBAuthRepositoryImpl(networkService: networkService, keychainService: keychainService)
+    }
+    //MARK: Scene
     var body: some Scene {
         WindowGroup {
             Group {
                 switch appState {
                 case .login:
-                    LoginView(authService: authentication.authService)
-                        .environmentObject(authentication)
+                    LoginView(repository: authRepository)
+                        .environmentObject(authenticationState)
                 case .authenticated:
-                    TabBarView(networkService: networkService, imageService: imageService, trendingRepository: trendingRepository, keychainService: keychainService)
-                        .environmentObject(authentication)
+                    TabBarView(networkService: networkService, imageService: imageService, trendingRepository: trendingRepository, keychainService: keychainService, favoritesRepository: favoritesRepository, userRepository: userRepository)
+                        .environmentObject(authenticationState)
                 }
             }
         }
+        
     }
 }

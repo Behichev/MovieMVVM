@@ -15,37 +15,51 @@ struct MediaPreviewCell: View {
     @State private var image: UIImage?
     
     var body: some View {
-        HStack {
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 110)
-                    .cornerRadius(20)
-            } else {
-                skeletonImageView
-            }
-            
-            HStack {
-                VStack {
-                    Text(media.name ?? media.title ?? "No title")
-                        .font(.headline.bold())
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .center) {
+                if let image = image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 110)
+                        .cornerRadius(20)
+                } else {
+                    skeletonImageView
+                }
+                
+                VStack(spacing: 8) {
+                    HStack {
+                        Text(media.name ?? media.title ?? "No title")
+                            .font(.headline.bold())
+                        
+                        Spacer()
+                        
+                        Button {
+                            withAnimation {
+                                onFavoritesTapped()
+                            }
+                        } label: {
+                            Image(systemName: media.isInFavorites ?? false ? "star.fill" : "star")
+                        }
+                    }
+                    .foregroundStyle(.primary)
                     
-                    Text(media.releaseDate ?? media.firstAirDate ?? "")
-                        .font(.footnote)
+                    HStack() {
+                        Image(systemName: "calendar")
+                            .font(.caption2)
+                        Text(media.releaseDate?.formattedDate() ?? media.firstAirDate?.formattedDate() ?? "")
+                            .font(.footnote)
+                        Spacer()
+                    }
+                    .foregroundStyle(.secondary)
+                    
                     Spacer()
                 }
-            }
-            Spacer()
-            VStack {
-                Button {
-                    withAnimation {
-                        onFavoritesTapped()
-                    }
-                } label: {
-                    Image(systemName: media.isInFavorites ?? false ? "star.fill" : "star")
-                }
-             Spacer()
+                
+                Spacer()
+                
+                
+                
             }
         }
         .task {

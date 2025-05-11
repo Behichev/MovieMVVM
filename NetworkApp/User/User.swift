@@ -1,5 +1,5 @@
 //
-//  Account.swift
+//  User.swift
 //  NetworkApp
 //
 //  Created by Ivan Behichev on 21.04.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct Account: Codable {
+struct User: Codable {
     let avatar: Avatar
     let id: Int
     let iso6391: String

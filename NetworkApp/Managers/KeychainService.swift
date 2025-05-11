@@ -8,7 +8,7 @@
 import Foundation
 import Security
 
-final class KeychainManager: SecureStorable {
+final class KeychainService: SecureStorable {
     
     func save<T: Codable>(_ object: T, forKey key: String) {
         let encoder = JSONEncoder()

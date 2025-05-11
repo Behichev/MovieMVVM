@@ -10,10 +10,10 @@ import SwiftUI
 struct LoginView: View {
     
     @StateObject var viewModel: LoginViewModel
-    @EnvironmentObject var authentication: Authentication
+    @EnvironmentObject var authentication: AuthenticationState
     
-    init(authService: TMDBAuthService) {
-        _viewModel = StateObject(wrappedValue: LoginViewModel(authService: authService))
+    init(repository: TMDBAuthRepository) {
+        _viewModel = StateObject(wrappedValue: LoginViewModel(repository: repository))
     }
     
     enum Assets: String {
@@ -42,73 +42,85 @@ struct LoginView: View {
             }
         }
     }
+}
+
+//MARK: - Components
+
+private extension LoginView {
     
     var authView: some View {
         VStack(spacing: Constants.Design.LayoutConstants.defaultSpacing.rawValue) {
-            Text("Login")
-                .font(.largeTitle)
-                .fontWeight(.heavy)
-            HStack {
-                Image(systemName: Assets.userImage.rawValue)
-                TextField("Username", text: $viewModel.credentials.username)
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
-                    .foregroundStyle(.clear)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
-                            .stroke(.primary, lineWidth: 2)
-                    }
-            )
-            
-            HStack {
-                Image(systemName: Assets.passwordImage.rawValue)
-                if viewModel.isPasswordVisible {
-                    TextField("Password",
-                              text: $viewModel.credentials.password)
-                    
-                } else {
-                    SecureField("Password",
-                                text: $viewModel.credentials.password)
-                    
-                }
-                Image(systemName: viewModel.passwordThumbImageName)
-                    .onTapGesture {
-                        withAnimation {
-                            viewModel.isPasswordVisible.toggle()
-                        } 
-                    }
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
-                    .foregroundStyle(.clear)
-                    .overlay {
-                        RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
-                            .stroke(.primary, lineWidth: 2)
-                    }
-            )
-            
-            Button("Sign In") {
-                Task {
-                    do {
-                        try await viewModel.checkValidation()
-                        await authentication.checkSession()
-                    } catch {
-                        viewModel.authState = .login
-                        throw error
-                    }
-                }
-            }
-            .disabled(viewModel.isLoggingDisabled)
-            .opacity(viewModel.isLoggingDisabled ? 0.5 : 1.0)
+            title
+            usernameTextField
+            passwordTextField
+            signInButton
         }
         .textInputAutocapitalization(.never)
         .disableAutocorrection(true)
         .padding()
         .fontWeight(.semibold)
     }
+    
+    var title: some View {
+        Text("Login")
+            .font(.largeTitle)
+            .fontWeight(.heavy)
+    }
+    
+    var usernameTextField: some View {
+        HStack {
+            Image(systemName: Assets.userImage.rawValue)
+            TextField("Username", text: $viewModel.credentials.username)
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
+                .foregroundStyle(.clear)
+                .overlay {
+                    RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
+                        .stroke(.primary, lineWidth: 2)
+                }
+        )
+    }
+    
+    var passwordTextField: some View {
+        HStack {
+            Image(systemName: Assets.passwordImage.rawValue)
+            if viewModel.isPasswordVisible {
+                TextField("Password",
+                          text: $viewModel.credentials.password)
+                
+            } else {
+                SecureField("Password",
+                            text: $viewModel.credentials.password)
+                
+            }
+            Image(systemName: viewModel.passwordThumbImageName)
+                .onTapGesture {
+                    withAnimation {
+                        viewModel.isPasswordVisible.toggle()
+                    }
+                }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
+                .foregroundStyle(.clear)
+                .overlay {
+                    RoundedRectangle(cornerRadius: Constants.Design.LayoutConstants.cornerRadius.rawValue)
+                        .stroke(.primary, lineWidth: 2)
+                }
+        )
+    }
+    
+    var signInButton: some View {
+        Button("Sign In") {
+            Task {
+                try await viewModel.signIn()
+                await authentication.checkSession()
+            }
+        }
+        .disabled(viewModel.isLoggingDisabled)
+        .opacity(viewModel.isLoggingDisabled ? 0.5 : 1.0)
+    }
 }
-
-

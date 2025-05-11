@@ -7,7 +7,7 @@
 
 import Foundation
 
-class TMDBImageLoader: ImageLoaderService {
+final class TMDBImageLoader: ImageLoaderService {
     
     func prepareImagePath(from string: String) throws -> URL {
         let stringURL = "https://image.tmdb.org/t/p/w200\(string)"

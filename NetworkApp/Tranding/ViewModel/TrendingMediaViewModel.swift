@@ -13,9 +13,9 @@ final class TrendingMediaViewModel: ObservableObject {
     @Published var media: [MediaItem] = []
     @Published var viewState: TrendingMediaViewState = .loading
     
-    private let repository: MediaRepository
+    private let repository: TrendingMediaRepository
     
-    init(repository: MediaRepository) {
+    init(repository: TrendingMediaRepository) {
         self.repository = repository
     }
     
@@ -35,12 +35,14 @@ final class TrendingMediaViewModel: ObservableObject {
         }
     }
     
-    func favoritesToggle(_ media: MediaItem) async throws {
+    func favoritesToggle(_ item: MediaItem) async throws {
         do {
-            if media.isInFavorites ?? false {
-                try await repository.deleteFromFavorites(media)
+            if item.isInFavorites ?? false {
+               let result = try await repository.deleteFromFavorites(item)
+                updateFavorite(result.0, result.1)
             } else {
-                try await repository.addToFavorite(media)
+                let result = try await repository.addToFavorite(item)
+                updateFavorite(result.0, result.1)
             }
         } catch {
             viewState = .error(message: error.localizedDescription)
@@ -54,16 +56,13 @@ final class TrendingMediaViewModel: ObservableObject {
             let image = UIImage(data: data)
             return image
         } catch {
-            viewState = .error(message: error.localizedDescription)
             throw error
         }
     }
     
-    func refreshFavoriteStatuses() async {
-        do {
-            try await repository.fetchFavorites()
-        } catch {
-            viewState = .error(message: error.localizedDescription)
+    private func updateFavorite(_ id: Int, _ bool: Bool) {
+        if let index = media.firstIndex(where: {$0.id == id }) {
+            media[index].isInFavorites = bool
         }
     }
 }

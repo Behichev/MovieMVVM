@@ -14,7 +14,7 @@ final class LoginViewModel: ObservableObject {
     @Published var authState: AuthViewState = .login
     @Published var isPasswordVisible = false
     
-    private let authService: TMDBAuthService
+    private let repository: TMDBAuthRepository
     
     var isLoggingDisabled: Bool {
         credentials.username.isEmpty || credentials.password.isEmpty
@@ -24,8 +24,8 @@ final class LoginViewModel: ObservableObject {
         isPasswordVisible ? "eye.slash.fill" : "eye.fill"
     }
     
-    init(authService: TMDBAuthService) {
-        self.authService = authService
+    init(repository: TMDBAuthRepository) {
+        self.repository = repository
     }
     
     enum AuthViewState {
@@ -34,23 +34,21 @@ final class LoginViewModel: ObservableObject {
         case error(errorMessage: String)
     }
     
-    func checkValidation() async throws {
+    func signIn() async throws {
         authState = .loading
         do {
-            try await authService.requestToken()
-            try await authService.userAuthorization(with: credentials)
-            try await authService.createSession()
+            try await repository.login(credentials)
         } catch let authError as NetworkError {
             authState = .error(errorMessage: authError.localizedDescription)
-            await resetStateAfterDelay()
+            await resetErrorAfterDelay()
         } catch {
             authState = .error(errorMessage: String(describing: error))
-            await resetStateAfterDelay()
+            await resetErrorAfterDelay()
             throw error
         }
     }
     
-    private func resetStateAfterDelay() async {
+    private func resetErrorAfterDelay() async {
         try? await Task.sleep(nanoseconds: 4_000_000_000)
         authState = .login
     }

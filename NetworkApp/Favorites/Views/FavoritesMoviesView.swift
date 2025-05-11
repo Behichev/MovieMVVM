@@ -1,18 +1,18 @@
 //
-//  TrendingMediaView.swift
+//  FavoritesMoviesView.swift
 //  NetworkApp
 //
-//  Created by Ivan Behichev on 10.04.2025.
+//  Created by Ivan Behichev on 24.04.2025.
 //
 
 import SwiftUI
 
-struct TrendingMediaView: View {
+struct FavoritesMoviesView: View {
     
-    @StateObject private var viewModel: TrendingMediaViewModel
+    @StateObject var viewModel: FavoritesViewModel
     
-    init(repository: TrendingMediaRepository) {
-        _viewModel = StateObject(wrappedValue: TrendingMediaViewModel(repository: repository))
+    init(repository: FavoritesMediaRepository) {
+        _viewModel = StateObject(wrappedValue: FavoritesViewModel(repository: repository))
     }
     
     var body: some View {
@@ -24,23 +24,24 @@ struct TrendingMediaView: View {
                         LoaderView()
                     case .success:
                         EmptyView()
-                    case .error(let message):
+                    case .error(let errorMessage):
                         VStack {
-                            ErrorView(errorMessage: message)
+                            ErrorView(errorMessage: errorMessage)
                             Spacer()
                         }
                     }
                 }
         }
         .task {
-            try? await viewModel.loadMedia()
+            try? await viewModel.fetchFavorites()
         }
     }
 }
 
 //MARK: - Components
 
-private extension TrendingMediaView {
+private extension FavoritesMoviesView {
+    
     var mainContent: some View {
         NavigationView {
             ScrollView {
@@ -48,23 +49,23 @@ private extension TrendingMediaView {
                     cells
                 }
             }
+            .padding()
             .refreshable {
                 Task {
-                    try? await viewModel.loadMedia()
+                    try? await viewModel.fetchFavorites()
                 }
             }
-            .navigationTitle("Trending")
-            .padding()
+            .navigationTitle("Favorites")
         }
     }
     
     var cells: some View {
-        ForEach(viewModel.media, id: \.id) { media in
+        ForEach(viewModel.favoritesMedia, id: \.id) { media in
             MediaPreviewCell(media: media) { url in
                 try? await viewModel.setImage(url)
             } onFavoritesTapped: {
                 Task {
-                    try? await viewModel.favoritesToggle(media)
+                    try? await viewModel.removeFromFavorites(media)
                 }
             }
         }

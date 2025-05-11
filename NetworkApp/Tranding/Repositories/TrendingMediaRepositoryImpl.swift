@@ -1,5 +1,5 @@
 //
-//  TrendingMediaRepository.swift
+//  TrendingMediaRepositoryImpl.swift
 //  NetworkApp
 //
 //  Created by Ivan Behichev on 08.05.2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-actor TrendingMediaRepository: MediaRepository {
+actor TrendingMediaRepositoryImpl: TrendingMediaRepository {
     
     private var mediaList: [MediaItem] = []
     private var favoriteMediaList: [MediaItem] = []
@@ -20,49 +20,47 @@ actor TrendingMediaRepository: MediaRepository {
         self.networkService = networkService
         self.keychainService = keychainService
         self.imageService = imageLoaderService
-        userID = keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: String.self) ?? ""
+        userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
     }
     
     func fetchMedia() async throws -> [MediaItem] {
         do {
-            if mediaList.isEmpty {
-                let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.trending(mediaItem: .movie, timeWindow: TimeWindow.day.rawValue))
-                mediaList = mediaResult.results
-                return mediaList
-            } else {
-                return mediaList
-            }
+            let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.trending(mediaItem: .movie, timeWindow: TimeWindow.day.rawValue))
+            mediaList = mediaResult.results
+            try await fetchFavorites()
+            syncWithFavorites()
+            return mediaList
         } catch {
             throw error
         }
     }
     
     func fetchFavorites() async throws {
-        print("User ID: \(userID)")
         let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: userID))
         favoriteMediaList = mediaResult.results
-        updateFavoriteList()
     }
     
-    func addToFavorite(_ media: MediaItem) async throws {
+    func addToFavorite(_ item: MediaItem) async throws -> (Int, Bool) {
         do {
-            try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, item: media))
-            if let index = favoriteMediaList.firstIndex(where: { $0.id == media.id }) {
-                favoriteMediaList[index].isInFavorites = true
-                updateFavoriteList()
+            try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, item: item))
+            if let index = mediaList.firstIndex(where: { $0.id == item.id }) {
+                mediaList[index].isInFavorites = true
+                return (id: mediaList[index].id, value: true)
             }
+            return (0, false)
         } catch {
             throw error
         }
     }
     
-    func deleteFromFavorites(_ media: MediaItem) async throws {
+    func deleteFromFavorites(_ item: MediaItem) async throws -> (Int, Bool) {
         do {
-            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: media))
-            if let index = favoriteMediaList.firstIndex(where: { $0.id == media.id }) {
-                favoriteMediaList[index].isInFavorites = false
-                updateFavoriteList()
+            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: item))
+            if let index = mediaList.firstIndex(where: { $0.id == item.id }) {
+                mediaList[index].isInFavorites = false
+                return (id: mediaList[index].id, value: false)
             }
+            return (0, false)
         } catch {
             throw error
         }
@@ -78,7 +76,7 @@ actor TrendingMediaRepository: MediaRepository {
         }
     }
     
-    private func updateFavoriteList() {
+    private func syncWithFavorites() {
         for (index, item) in mediaList.enumerated() {
             if let _ = favoriteMediaList.first(where: { $0.id == item.id }) {
                 mediaList[index].isInFavorites = true
