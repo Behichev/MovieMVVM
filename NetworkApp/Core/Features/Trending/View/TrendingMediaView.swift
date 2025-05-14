@@ -11,7 +11,7 @@ struct TrendingMediaView: View {
     
     @StateObject private var viewModel: TrendingMediaViewModel
     
-    init(repository: TrendingMediaRepository) {
+    init(repository: TMDBRepositoryProtocol) {
         _viewModel = StateObject(wrappedValue: TrendingMediaViewModel(repository: repository))
     }
     

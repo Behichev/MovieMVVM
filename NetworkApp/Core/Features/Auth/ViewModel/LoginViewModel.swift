@@ -14,7 +14,7 @@ final class LoginViewModel: ObservableObject {
     @Published var authState: AuthViewState = .login
     @Published var isPasswordVisible = false
     
-    private let repository: TMDBAuthRepository
+    private let repository: TMDBRepositoryProtocol
     
     var isLoggingDisabled: Bool {
         credentials.username.isEmpty || credentials.password.isEmpty
@@ -24,7 +24,7 @@ final class LoginViewModel: ObservableObject {
         isPasswordVisible ? "eye.slash.fill" : "eye.fill"
     }
     
-    init(repository: TMDBAuthRepository) {
+    init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
     }
     
@@ -37,7 +37,9 @@ final class LoginViewModel: ObservableObject {
     func signIn() async throws {
         authState = .loading
         do {
-            try await repository.login(credentials)
+            try await repository.requestToken()
+            try await repository.userAuthorization(with: credentials)
+            try await repository.createSession()
         } catch let authError as NetworkError {
             authState = .error(errorMessage: authError.localizedDescription)
             await resetErrorAfterDelay()

@@ -9,10 +9,10 @@ import SwiftUI
 
 struct UserView: View {
     
-    @EnvironmentObject var authentication: AuthenticationState
+    @EnvironmentObject var authentication: AuthenticationStore
     @StateObject var viewModel: UserViewModel
     
-    init(repository: UserRepository) {
+    init(repository: TMDBRepositoryProtocol) {
         _viewModel = StateObject(wrappedValue: UserViewModel(repository: repository))
     }
  

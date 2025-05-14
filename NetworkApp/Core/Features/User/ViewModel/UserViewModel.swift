@@ -22,9 +22,9 @@ final class UserViewModel: ObservableObject {
         }
     }
     
-    private let repository: UserRepository
+    private let repository: TMDBRepositoryProtocol
     
-    init(repository: UserRepository) {
+    init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
     }
     

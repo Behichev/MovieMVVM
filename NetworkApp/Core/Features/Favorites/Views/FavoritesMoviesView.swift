@@ -11,7 +11,7 @@ struct FavoritesMoviesView: View {
     
     @StateObject var viewModel: FavoritesViewModel
     
-    init(repository: FavoritesMediaRepository) {
+    init(repository: TMDBRepositoryProtocol) {
         _viewModel = StateObject(wrappedValue: FavoritesViewModel(repository: repository))
     }
     

@@ -13,9 +13,9 @@ final class TrendingMediaViewModel: ObservableObject {
     @Published var media: [MediaItem] = []
     @Published var viewState: TrendingMediaViewState = .loading
     
-    private let repository: TrendingMediaRepository
+    private let repository: TMDBRepositoryProtocol
     
-    init(repository: TrendingMediaRepository) {
+    init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
     }
     
@@ -28,7 +28,7 @@ final class TrendingMediaViewModel: ObservableObject {
     func loadMedia() async throws {
         viewState = .loading
         do {
-            media = try await repository.fetchMedia()
+            media = try await repository.fetchTrendingMedia()
             viewState = .success
         } catch {
             viewState = .error(message: error.localizedDescription)
@@ -38,11 +38,11 @@ final class TrendingMediaViewModel: ObservableObject {
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
             if item.isInFavorites ?? false {
-               let result = try await repository.deleteFromFavorites(item)
-                updateFavorite(result.0, result.1)
+                updateFavorite(item.id, false)
+               try await repository.deleteMovieFromFavorites(item)
             } else {
-                let result = try await repository.addToFavorite(item)
-                updateFavorite(result.0, result.1)
+                updateFavorite(item.id, true)
+                try await repository.addMovieToFavorite(item)
             }
         } catch {
             viewState = .error(message: error.localizedDescription)

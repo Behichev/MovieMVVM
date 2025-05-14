@@ -11,18 +11,14 @@ struct TabBarView: View {
     
     private let networkService: NetworkService
     private let imageService: ImageLoaderService
-    private let trendingRepository: TrendingMediaRepository
     private let keychainService: SecureStorable
-    private let favoritesRepository: FavoritesMediaRepository
-    private let userRepository: UserRepository
+    private let repository: TMDBRepositoryProtocol
     
-    init(networkService: NetworkService, imageService: ImageLoaderService, trendingRepository: TrendingMediaRepository, keychainService: SecureStorable, favoritesRepository: FavoritesMediaRepository, userRepository: UserRepository) {
+    init(networkService: NetworkService, imageService: ImageLoaderService, repository: TMDBRepositoryProtocol, keychainService: SecureStorable) {
         self.networkService = networkService
         self.imageService = imageService
-        self.trendingRepository = trendingRepository
+        self.repository = repository
         self.keychainService = keychainService
-        self.favoritesRepository = favoritesRepository
-        self.userRepository = userRepository
     }
     
     enum Assets: String {
@@ -33,17 +29,17 @@ struct TabBarView: View {
     
     var body: some View {
         TabView {
-            TrendingMediaView(repository: trendingRepository)
+            TrendingMediaView(repository: repository)
                 .tabItem {
                     Label("Tranding", systemImage: Assets.trendingImageName.rawValue)
                 }
                 
-            FavoritesMoviesView(repository: favoritesRepository)
+            FavoritesMoviesView(repository: repository)
                 .tabItem {
                     Label("Favorites", systemImage: Assets.favoritesImageName.rawValue)
                 }
             
-            UserView(repository: userRepository)
+            UserView(repository: repository)
                 .tabItem {
                     Label("Account", systemImage: Assets.userImageName.rawValue)
                 }

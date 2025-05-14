@@ -8,12 +8,11 @@
 import Foundation
 
 @MainActor
-final class AuthenticationState: ObservableObject {
+final class AuthenticationStore: ObservableObject {
     
     @Published var isAuthenticated = true
     
-    private let userRepository: UserRepository
-    private let sessionRepository: SessionRepository
+    private let repository: TMDBRepositoryProtocol
     private let keychainService: SecureStorable
     
     private var validationTask: Task<Void, Never>? = nil
@@ -21,9 +20,8 @@ final class AuthenticationState: ObservableObject {
     private var sessionID: String
     private var userID: String
     
-    init(userRepository: UserRepository, sessionRepository: SessionRepository, keychainService: SecureStorable) {
-        self.userRepository = userRepository
-        self.sessionRepository = sessionRepository
+    init(repository: TMDBRepositoryProtocol, keychainService: SecureStorable) {
+        self.repository = repository
         self.keychainService = keychainService
         
         sessionID = keychainService.get(forKey: Constants.KeychainKeys.session.rawValue, as: String.self) ?? ""
@@ -37,7 +35,7 @@ final class AuthenticationState: ObservableObject {
     func checkSession() async {
         do {
             updateKeys()
-            let _ = try await userRepository.fetchUser(with: Constants.APIKeys.key)
+            let _ = try await repository.fetchUser(with: Constants.APIKeys.key)
             isAuthenticated = true
         } catch {
             isAuthenticated = false
@@ -46,7 +44,7 @@ final class AuthenticationState: ObservableObject {
     
     func logout() async {
         do {
-            try await sessionRepository.deleteSession(Constants.APIKeys.token, sessionID)
+            try await repository.deleteSession(Constants.APIKeys.token, sessionID)
             keychainService.delete(forKey: Constants.KeychainKeys.userID.rawValue)
             keychainService.delete(forKey: Constants.KeychainKeys.session.rawValue)
             isAuthenticated = false

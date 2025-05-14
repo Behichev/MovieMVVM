@@ -16,34 +16,28 @@ struct NetworkAppApp: App {
     }
     
     private var appState: AppState {
-        if authenticationState.isAuthenticated {
+        if authenticationStore.isAuthenticated {
             return .authenticated
         } else {
             return .login
         }
     }
     
-    @StateObject var authenticationState: AuthenticationState
+    @StateObject var authenticationStore: AuthenticationStore
     //MARK: Services
     private var networkService: NetworkService = NetworkLayer()
     private var imageService: ImageLoaderService = TMDBImageLoader()
     private var keychainService = KeychainService()
     //MARK: Repositories
-    private var trendingRepository: TrendingMediaRepository
-    private var favoritesRepository: FavoritesMediaRepository
-    private var authRepository: TMDBAuthRepository
-    private var userRepository: UserRepository
-    private var sessionRepository: SessionRepository
+    private var repository: TMDBRepositoryProtocol
     //MARK: Init
     init() {
-        authRepository = TMDBAuthRepositoryImpl(keychainService: keychainService)
-        userRepository = TMDBUserRepositoryImpl(networkService: networkService, keychainService: keychainService)
-        sessionRepository = SessionRepositoryImpl(networkService: networkService)
-        let authenticationState = AuthenticationState(userRepository: userRepository, sessionRepository: sessionRepository, keychainService: keychainService)
-        _authenticationState = StateObject(wrappedValue: authenticationState)
-        trendingRepository = TrendingMediaRepositoryImpl(networkService: networkService, keychainService: keychainService, imageLoaderService: imageService)
-        favoritesRepository = FavoritesMediaRepositoryImpl(networkService: networkService, keychainService: keychainService, imageService: imageService)
-        authRepository = TMDBAuthRepositoryImpl(networkService: networkService, keychainService: keychainService)
+        repository = TMDBRepository(networkService: networkService,
+                                    imageService: imageService,
+                                    keychainService: keychainService)
+        let authenticationStore = AuthenticationStore(repository: repository,
+                                                      keychainService: keychainService)
+        _authenticationStore = StateObject(wrappedValue: authenticationStore)
     }
     //MARK: Scene
     var body: some Scene {
@@ -51,11 +45,14 @@ struct NetworkAppApp: App {
             Group {
                 switch appState {
                 case .login:
-                    LoginView(repository: authRepository)
-                        .environmentObject(authenticationState)
+                    LoginView(repository: repository)
+                        .environmentObject(authenticationStore)
                 case .authenticated:
-                    TabBarView(networkService: networkService, imageService: imageService, trendingRepository: trendingRepository, keychainService: keychainService, favoritesRepository: favoritesRepository, userRepository: userRepository)
-                        .environmentObject(authenticationState)
+                    TabBarView(networkService: networkService,
+                               imageService: imageService,
+                               repository: repository,
+                               keychainService: keychainService)
+                        .environmentObject(authenticationStore)
                 }
             }
         }
