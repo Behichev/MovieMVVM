@@ -39,14 +39,11 @@ final class FavoritesViewModel: ObservableObject {
     func removeFromFavorites(_ item: MediaItem) async throws {
         viewState = .loading
         do {
-            try await repository.deleteMovieFromFavorites(item)
             if let index = favoritesMedia.firstIndex(where: {$0.id == item.id }) {
                 favoritesMedia.remove(at: index)
             }
+            try? await repository.deleteMovieFromFavorites(item)
             viewState = .success
-        } catch {
-            viewState = .error(errorMessage: error.localizedDescription)
-            throw error
         }
     }
     

@@ -17,15 +17,15 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     private var authEndpoint: AuthEndpoint?
     private var token: TMDBToken?
     
-    private var mediaList: [MediaItem] = []
-    private var favoriteMediaList: [MediaItem] = []
+    private var dataSource: MoviesStorageProtocol
     
     init(networkService: NetworkService,
          imageService: ImageLoaderService,
-         keychainService: SecureStorable) {
+         keychainService: SecureStorable, dataSource: MoviesStorageProtocol) {
         self.networkService = networkService
         self.imageService = imageService
         self.keychainService = keychainService
+        self.dataSource = dataSource
         
         userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
     }
@@ -88,19 +88,49 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     
     func fetchTrendingMedia() async throws -> [MediaItem] {
         do {
+            let localMedia = dataSource.getTrendingMovies()
+            
             let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.trending(mediaItem: .movie, timeWindow: TimeWindow.day.rawValue))
-            mediaList = mediaResult.results
-            return mediaList
+            var mediaList = mediaResult.results
+            
+            let favoriteMedia = try await fetchFavoritesMovies()
+            
+            for item in favoriteMedia {
+                if let index = mediaList.firstIndex(where: {$0.id == item.id }) {
+                    mediaList[index].isInFavorites = true
+                }
+            }
+            
+            if localMedia != mediaList {
+                dataSource.saveTrendingMovies(mediaList)
+                return mediaList
+            } else {
+                return localMedia
+            }
+            
         } catch {
-            throw error
+            let localMedia = dataSource.getTrendingMovies()
+            return localMedia
         }
     }
     
     func fetchFavoritesMovies() async throws -> [MediaItem] {
         do {
             let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: userID))
-            favoriteMediaList = mediaResult.results
-            return favoriteMediaList
+            var favoriteMediaList = mediaResult.results
+            let favoritesMediaListLocal = dataSource.getTrendingMovies()
+            
+            for (index, _) in favoriteMediaList.enumerated() {
+                favoriteMediaList[index].isInFavorites = true
+            }
+            
+            if favoritesMediaListLocal != favoriteMediaList {
+                dataSource.saveFavoriteMovies(favoriteMediaList)
+                return favoriteMediaList
+            } else {
+                return favoritesMediaListLocal
+            }
+            
         } catch {
             throw error
         }
@@ -109,9 +139,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     func addMovieToFavorite(_ item: MediaItem) async throws {
         do {
             try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, item: item))
-            if let index = mediaList.firstIndex(where: { $0.id == item.id }) {
-                mediaList[index].isInFavorites = true
-            }
+            dataSource.addToFavorites(item)
         } catch {
             throw error
         }
@@ -119,12 +147,24 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     
     func deleteMovieFromFavorites(_ item: MediaItem) async throws {
         do {
-            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: item))
-            if let index = mediaList.firstIndex(where: { $0.id == item.id }) {
-                mediaList[index].isInFavorites = false
-            }
+            var deletedItem = item
+            deletedItem.mediaType = .movie
+            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: deletedItem))
+            dataSource.removeFromFavorites(item)
         } catch {
             throw error
+        }
+    }
+    
+    func favoritesToggle(_ item: MediaItem) async throws {
+        do {
+            if item.isInFavorites ?? false {
+               try await deleteMovieFromFavorites(item)
+            } else {
+                try await addMovieToFavorite(item)
+            }
+        } catch {
+            //Toast View Error here
         }
     }
     

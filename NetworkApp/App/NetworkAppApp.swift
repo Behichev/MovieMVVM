@@ -28,13 +28,14 @@ struct NetworkAppApp: App {
     private var networkService: NetworkService = NetworkLayer()
     private var imageService: ImageLoaderService = TMDBImageLoader()
     private var keychainService = KeychainService()
+    private var moviesStorage = MoviesStorage()
     //MARK: Repositories
     private var repository: TMDBRepositoryProtocol
     //MARK: Init
     init() {
         repository = TMDBRepository(networkService: networkService,
                                     imageService: imageService,
-                                    keychainService: keychainService)
+                                    keychainService: keychainService, dataSource: moviesStorage)
         let authenticationStore = AuthenticationStore(repository: repository,
                                                       keychainService: keychainService)
         _authenticationStore = StateObject(wrappedValue: authenticationStore)

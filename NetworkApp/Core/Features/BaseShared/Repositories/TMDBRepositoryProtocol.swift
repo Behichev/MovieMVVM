@@ -15,6 +15,7 @@ protocol TMDBRepositoryProtocol {
     func fetchUser(with apiKey: String) async throws -> User
     func fetchTrendingMedia() async throws -> [MediaItem]
     func fetchFavoritesMovies() async throws -> [MediaItem]
+    func favoritesToggle(_ item: MediaItem) async throws
     func addMovieToFavorite(_ item: MediaItem) async throws
     func deleteMovieFromFavorites(_ item: MediaItem) async throws
     func loadImage(_ path: String) async throws -> Data

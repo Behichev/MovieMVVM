@@ -37,13 +37,8 @@ final class TrendingMediaViewModel: ObservableObject {
     
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
-            if item.isInFavorites ?? false {
-                updateFavorite(item.id, false)
-               try await repository.deleteMovieFromFavorites(item)
-            } else {
-                updateFavorite(item.id, true)
-                try await repository.addMovieToFavorite(item)
-            }
+            updateFavorite(item)
+            try await repository.favoritesToggle(item)
         } catch {
             viewState = .error(message: error.localizedDescription)
             throw error
@@ -60,9 +55,9 @@ final class TrendingMediaViewModel: ObservableObject {
         }
     }
     
-    private func updateFavorite(_ id: Int, _ bool: Bool) {
-        if let index = media.firstIndex(where: {$0.id == id }) {
-            media[index].isInFavorites = bool
+    private func updateFavorite(_ item: MediaItem) {
+        if let index = media.firstIndex(where: { $0.id == item.id }) {
+            media[index].isInFavorites = item.isInFavorites ?? false ? false : true
         }
     }
 }
