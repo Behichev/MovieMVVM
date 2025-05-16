@@ -19,4 +19,5 @@ protocol TMDBRepositoryProtocol {
     func addMovieToFavorite(_ item: MediaItem) async throws
     func deleteMovieFromFavorites(_ item: MediaItem) async throws
     func loadImage(_ path: String) async throws -> Data
+    func fetchMovieList(page: Int) async throws -> [MediaItem]
 }

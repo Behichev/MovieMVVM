@@ -54,6 +54,12 @@ struct MediaPreviewCell: View {
                     .foregroundStyle(.secondary)
                     
                     Spacer()
+                    
+                    Text(media.overview)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(3)
+                    
+                    Spacer()
                 }
                 
                 Spacer()

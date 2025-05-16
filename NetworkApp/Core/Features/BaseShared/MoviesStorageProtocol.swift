@@ -10,6 +10,7 @@ import Foundation
 protocol MoviesStorageProtocol {
     func getTrendingMovies() -> [MediaItem]
     func getFavoritesMovies() -> [MediaItem]
+    func getMoviesList() -> [MediaItem]
     func saveTrendingMovies(_ movies: [MediaItem])
     func saveFavoriteMovies(_ movies: [MediaItem])
     func addToFavorites(_ item: MediaItem)

@@ -9,28 +9,37 @@ import Foundation
 
 final class MoviesStorage: MoviesStorageProtocol {
     
-    private var movies: [MediaItem] = []
+    private var trendingMovies: [MediaItem] = []
     private var favoriteMovies: [MediaItem] = []
+    private var moviesList: [MediaItem] = []
     
     func getTrendingMovies() -> [MediaItem] {
-        return movies
+        return trendingMovies
     }
     
     func getFavoritesMovies() -> [MediaItem] {
         return favoriteMovies
     }
     
+    func getMoviesList() -> [MediaItem] {
+        return moviesList
+    }
+    
+    func saveMoviesList(_ movies: [MediaItem]) {
+        moviesList = movies
+    }
+    
     func saveTrendingMovies(_ movies: [MediaItem]) {
-        self.movies = movies
+        trendingMovies = movies
     }
     
     func saveFavoriteMovies(_ movies: [MediaItem]) {
-        self.favoriteMovies = movies
+        favoriteMovies = movies
     }
     
     func addToFavorites(_ item: MediaItem) {
-        if let index = movies.firstIndex(where: { $0.id == item.id }) {
-            movies[index].isInFavorites = true
+        if let index = trendingMovies.firstIndex(where: { $0.id == item.id }) {
+            trendingMovies[index].isInFavorites = true
         }
         
         if !favoriteMovies.contains(where: {$0.id == item.id}) {
@@ -39,8 +48,8 @@ final class MoviesStorage: MoviesStorageProtocol {
     }
     
     func removeFromFavorites(_ item: MediaItem) {
-        if let index = movies.firstIndex(where: { $0.id == item.id }) {
-            movies[index].isInFavorites = false
+        if let index = trendingMovies.firstIndex(where: { $0.id == item.id }) {
+            trendingMovies[index].isInFavorites = false
         }
         
         if let index = favoriteMovies.firstIndex(where: { $0.id == item.id }) {

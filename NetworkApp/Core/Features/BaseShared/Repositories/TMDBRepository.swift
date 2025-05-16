@@ -178,5 +178,14 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         }
     }
     
-    
+    func fetchMovieList(page: Int) async throws -> [MediaItem] {
+        do {
+            let strPage = "\(page)"
+            let result: MediaResult = try await networkService.performRequest(from: MediaEndpoint.moviesList(page: strPage))
+            return result.results
+        } catch {
+            //Toast View error here
+            return dataSource.getMoviesList()
+        }
+    }
 }

@@ -25,13 +25,20 @@ struct TabBarView: View {
         case trendingImageName = "chart.line.uptrend.xyaxis.circle.fill"
         case favoritesImageName = "star.circle.fill"
         case userImageName = "person.crop.circle.fill"
+        case discoverImageName = "movieclapper"
     }
     
     var body: some View {
         TabView {
+            
             TrendingMediaView(repository: repository)
                 .tabItem {
-                    Label("Tranding", systemImage: Assets.trendingImageName.rawValue)
+                    Label("Trending", systemImage: Assets.trendingImageName.rawValue)
+                }
+            
+            DiscoverMovieView(repository: repository)
+                .tabItem{
+                    Label("Movies", systemImage: Assets.discoverImageName.rawValue)
                 }
                 
             FavoritesMoviesView(repository: repository)

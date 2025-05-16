@@ -23,6 +23,7 @@ enum MediaEndpoint: Endpoint {
     case favoriteMovies(accountId: String)
     case addToFavorites(accountId: String, item: MediaItem)
     case removeFromFavorites(accountId: String, item: MediaItem)
+    case moviesList(page: String)
     
     var path: String {
         switch self {
@@ -32,12 +33,15 @@ enum MediaEndpoint: Endpoint {
             return "/3/account/\(accountId)/favorite/movies"
         case .addToFavorites(let accountId, _), .removeFromFavorites(let accountId, _):
             return "/3/account/\(accountId)/favorite"
+        case .moviesList(let page):
+            return "/3/discover/movie"
         }
+    
     }
     
     var headers: [String : String]? {
         switch self {
-        case .trending(_,_), .favoriteMovies(_), .addToFavorites(_, _), .removeFromFavorites(_, _):
+        case .trending(_,_), .favoriteMovies(_), .addToFavorites(_, _), .removeFromFavorites(_, _), .moviesList(_):
             [
                 "accept": "application/json",
                 "content-type": "application/json",
@@ -62,12 +66,14 @@ enum MediaEndpoint: Endpoint {
                 "media_id": mediaItem.id,
                 "favorite": false
             ]
+        case .moviesList(_):
+            return nil
         }
     }
     
     var httpMethod: HTTPMethods {
         switch self {
-        case .trending(_, _), .favoriteMovies(_):
+        case .trending(_, _), .favoriteMovies(_), .moviesList(_):
                 .get
         case .addToFavorites(_, _), .removeFromFavorites(_, _):
                 .post
@@ -77,15 +83,23 @@ enum MediaEndpoint: Endpoint {
     var queryItems: [URLQueryItem]? {
         switch self {
         case .trending(_, _):
-            nil
+            return nil
         case .favoriteMovies(_):
-            [
+            return [
               URLQueryItem(name: "language", value: "en-US"),
               URLQueryItem(name: "page", value: "1"),
               URLQueryItem(name: "sort_by", value: "created_at.asc"),
             ]
         case .addToFavorites(_, _), .removeFromFavorites(_, _):
-            nil
+            return nil
+        case .moviesList(let page):
+            return [
+                URLQueryItem(name: "include_adult", value: "false"),
+                URLQueryItem(name: "include_video", value: "false"),
+                URLQueryItem(name: "language", value: "en-US"),
+                URLQueryItem(name: "page", value: page),
+                URLQueryItem(name: "sort_by", value: "popularity.desc"),
+              ]
         }
     }
 }
