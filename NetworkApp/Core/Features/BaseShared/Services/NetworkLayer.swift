@@ -91,6 +91,7 @@ struct NetworkLayer: NetworkService {
             }
             return try decoder.decode(T.self, from: data)
         } catch {
+            print("Decoding error: \(error)")
             print(error.localizedDescription)
             throw error
         }

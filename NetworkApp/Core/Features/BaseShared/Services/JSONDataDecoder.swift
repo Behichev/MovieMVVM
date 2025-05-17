@@ -8,6 +8,7 @@
 import Foundation
 
 struct JSONDataDecoder: DataDecoder {
+    
     private let decoder: JSONDecoder
     
     init(decoder: JSONDecoder = JSONDecoder()) {

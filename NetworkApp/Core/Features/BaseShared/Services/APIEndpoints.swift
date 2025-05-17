@@ -24,6 +24,7 @@ enum MediaEndpoint: Endpoint {
     case addToFavorites(accountId: String, item: MediaItem)
     case removeFromFavorites(accountId: String, item: MediaItem)
     case moviesList(page: String)
+    case movieDetails(movieID: String)
     
     var path: String {
         switch self {
@@ -33,15 +34,16 @@ enum MediaEndpoint: Endpoint {
             return "/3/account/\(accountId)/favorite/movies"
         case .addToFavorites(let accountId, _), .removeFromFavorites(let accountId, _):
             return "/3/account/\(accountId)/favorite"
-        case .moviesList(let page):
+        case .moviesList(_):
             return "/3/discover/movie"
+        case .movieDetails(let movieID):
+            return "/3/movie/\(movieID)"
         }
-    
     }
     
     var headers: [String : String]? {
         switch self {
-        case .trending(_,_), .favoriteMovies(_), .addToFavorites(_, _), .removeFromFavorites(_, _), .moviesList(_):
+        case .trending(_,_), .favoriteMovies(_), .addToFavorites(_, _), .removeFromFavorites(_, _), .moviesList(_), .movieDetails(_):
             [
                 "accept": "application/json",
                 "content-type": "application/json",
@@ -66,14 +68,14 @@ enum MediaEndpoint: Endpoint {
                 "media_id": mediaItem.id,
                 "favorite": false
             ]
-        case .moviesList(_):
+        case .moviesList(_), .movieDetails(_):
             return nil
         }
     }
     
     var httpMethod: HTTPMethods {
         switch self {
-        case .trending(_, _), .favoriteMovies(_), .moviesList(_):
+        case .trending(_, _), .favoriteMovies(_), .moviesList(_), .movieDetails(_):
                 .get
         case .addToFavorites(_, _), .removeFromFavorites(_, _):
                 .post
@@ -100,6 +102,10 @@ enum MediaEndpoint: Endpoint {
                 URLQueryItem(name: "page", value: page),
                 URLQueryItem(name: "sort_by", value: "popularity.desc"),
               ]
+        case .movieDetails(_):
+            return [
+              URLQueryItem(name: "language", value: "en-US"),
+            ]
         }
     }
 }

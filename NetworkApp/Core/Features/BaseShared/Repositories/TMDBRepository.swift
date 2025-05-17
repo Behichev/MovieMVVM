@@ -159,7 +159,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
             if item.isInFavorites ?? false {
-               try await deleteMovieFromFavorites(item)
+                try await deleteMovieFromFavorites(item)
             } else {
                 try await addMovieToFavorite(item)
             }
@@ -186,6 +186,18 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         } catch {
             //Toast View error here
             return dataSource.getMoviesList()
+        }
+    }
+    
+    func fetchMovie(_ id: Int) async throws -> Movie {
+        if let movie = dataSource.getMovieDetail(id) {
+            return movie
+        } else {
+            do {
+                return try await networkService.performRequest(from: MediaEndpoint.movieDetails(movieID: "\(id)"))
+            } catch {
+                throw error
+            }
         }
     }
 }

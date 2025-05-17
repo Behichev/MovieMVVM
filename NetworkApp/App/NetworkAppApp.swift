@@ -56,6 +56,7 @@ struct NetworkAppApp: App {
                         .environmentObject(authenticationStore)
                 }
             }
+            
         }
         
     }

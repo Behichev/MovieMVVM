@@ -10,8 +10,10 @@ import SwiftUI
 struct DiscoverMovieView: View {
     
     @StateObject private var viewModel: DiscoverMovieViewModel
+    private let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
+        self.repository = repository
         _viewModel = StateObject(wrappedValue: DiscoverMovieViewModel(repository: repository))
     }
     
@@ -37,17 +39,19 @@ private extension DiscoverMovieView {
             ScrollView {
                 LazyVStack {
                     ForEach(viewModel.movies) { movie in
-                        MediaPreviewCell(media: movie) { path in
-                           try? await viewModel.setImage(path)
-                        } onFavoritesTapped: {
-                            //
-                        }
-                        .task {
-                            if viewModel.hasReachedEnd(of: movie) {
-                               try? await viewModel.loadNextMovies()
+                        NavigationLink(destination: MovieDetailsView(repository: repository, movieID: movie.id)) {
+                            MediaPreviewCell(media: movie) { path in
+                               try? await viewModel.setImage(path)
+                            } onFavoritesTapped: {
+                                //
+                            }
+                            .task {
+                                if viewModel.hasReachedEnd(of: movie) {
+                                   try? await viewModel.loadNextMovies()
+                                }
                             }
                         }
-
+                        .buttonStyle(.plain)
                     }
                 }
             }

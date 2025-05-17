@@ -12,6 +12,8 @@ final class MoviesStorage: MoviesStorageProtocol {
     private var trendingMovies: [MediaItem] = []
     private var favoriteMovies: [MediaItem] = []
     private var moviesList: [MediaItem] = []
+    private var moviesCache: [Movie] = []
+    
     
     func getTrendingMovies() -> [MediaItem] {
         return trendingMovies
@@ -25,6 +27,15 @@ final class MoviesStorage: MoviesStorageProtocol {
         return moviesList
     }
     
+    func getMovieDetail(_ id: Int) -> Movie? {
+        if let index = moviesCache.firstIndex(where: {$0.id == id }) {
+            return moviesCache[index]
+        } else {
+            return nil
+        }
+    }
+    
+    
     func saveMoviesList(_ movies: [MediaItem]) {
         moviesList = movies
     }
@@ -35,6 +46,12 @@ final class MoviesStorage: MoviesStorageProtocol {
     
     func saveFavoriteMovies(_ movies: [MediaItem]) {
         favoriteMovies = movies
+    }
+    
+    func saveMovie(_ movie: Movie) {
+        if !moviesCache.contains(where: { $0.id == movie.id }) {
+            moviesCache.append(movie)
+        }
     }
     
     func addToFavorites(_ item: MediaItem) {
