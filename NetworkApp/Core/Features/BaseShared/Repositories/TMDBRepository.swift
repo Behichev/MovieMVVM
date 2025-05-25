@@ -9,25 +9,31 @@ import Foundation
 //TODO: Toast Notification Service
 final class TMDBRepository: TMDBRepositoryProtocol {
     
-    private let networkService: NetworkService
+    private let networkService: NetworkServiceProtocol
     private let imageService: ImageLoaderService
     private let keychainService: SecureStorable
     private let userID: String
+    private weak var errorManager: ErrorManager?
     
     private var authEndpoint: AuthEndpoint?
     private var token: TMDBToken?
     
     private var dataSource: MoviesStorageProtocol
     
-    init(networkService: NetworkService,
+    init(networkService: NetworkServiceProtocol,
          imageService: ImageLoaderService,
-         keychainService: SecureStorable, dataSource: MoviesStorageProtocol) {
+         keychainService: SecureStorable,
+         dataSource: MoviesStorageProtocol) {
         self.networkService = networkService
         self.imageService = imageService
         self.keychainService = keychainService
         self.dataSource = dataSource
         
         userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
+    }
+    
+    func setErrorManager(_ errorManager: ErrorManager) {
+        self.errorManager = errorManager
     }
     
     func requestToken() async throws {
@@ -46,6 +52,11 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         do {
             try await networkService.performPostRequest(from: authEndpoint)
         } catch NetworkError.invalidCredentials {
+            
+            await MainActor.run {
+                errorManager?.showError("\(NetworkError.invalidCredentials.localizedDescription)")
+            }
+            
             throw NetworkError.invalidCredentials
         } catch {
             throw error
@@ -180,8 +191,10 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     
     func fetchMovieList(page: Int) async throws -> [MediaItem] {
         do {
+            
             let strPage = "\(page)"
             let result: MediaResult = try await networkService.performRequest(from: MediaEndpoint.moviesList(page: strPage))
+            
             return result.results
         } catch {
             //Toast View error here

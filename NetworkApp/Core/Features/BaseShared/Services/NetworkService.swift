@@ -1,5 +1,5 @@
 //
-//  NetworkLayer.swift
+//  NetworkService.swift
 //  NetworkApp
 //
 //  Created by Ivan Behichev on 10.04.2025.
@@ -39,12 +39,12 @@ protocol Endpoint {
 
 typealias Parameters = [String: Any]
 
-protocol NetworkService {
+protocol NetworkServiceProtocol {
     func performRequest<T: Decodable>(from endpoint: Endpoint) async throws -> T
     func performPostRequest(from endpoint: Endpoint) async throws
 }
 
-struct NetworkLayer: NetworkService {
+final class NetworkService: NetworkServiceProtocol {
     private let session: URLSession
     private let decoder: DataDecoder
     

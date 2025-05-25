@@ -13,6 +13,7 @@ final class FavoritesViewModel: ObservableObject {
     @Published var favoritesMedia: [MediaItem] = []
     @Published var viewState: TrendingViewState = .loading
     
+    var isLoaded = false
     let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
@@ -22,16 +23,17 @@ final class FavoritesViewModel: ObservableObject {
     enum TrendingViewState {
         case loading
         case success
-        case error(errorMessage: String)
     }
     
     func fetchFavorites() async throws {
-        viewState = .loading
+        if favoritesMedia.isEmpty {
+            viewState = .loading
+        }
         do {
             favoritesMedia = try await repository.fetchFavoritesMovies()
             viewState = .success
+            isLoaded = true
         } catch {
-            viewState = .error(errorMessage: error.localizedDescription)
             throw error
         }
     }

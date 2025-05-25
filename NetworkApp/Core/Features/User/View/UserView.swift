@@ -10,11 +10,7 @@ import SwiftUI
 struct UserView: View {
     
     @EnvironmentObject var authentication: AuthenticationStore
-    @StateObject var viewModel: UserViewModel
-    
-    init(repository: TMDBRepositoryProtocol) {
-        _viewModel = StateObject(wrappedValue: UserViewModel(repository: repository))
-    }
+    @ObservedObject var viewModel: UserViewModel
  
     var body: some View {
         VStack(spacing: Constants.Design.LayoutConstants.defaultSpacing.rawValue) {

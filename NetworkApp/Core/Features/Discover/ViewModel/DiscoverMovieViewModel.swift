@@ -11,11 +11,14 @@ import SwiftUI
 final class DiscoverMovieViewModel: ObservableObject {
     
     @Published var movies: [MediaItem] = []
-    @Published var viewState: DiscoverViewState = .success
+    @Published var viewState: DiscoverViewState = .loading
+    
+    var isHasLoaded = false
+    var isNextPageLoading = false
     
     private var currentPage = 1
     
-    private let repository: TMDBRepositoryProtocol
+    let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
@@ -27,17 +30,33 @@ final class DiscoverMovieViewModel: ObservableObject {
     }
     
     func loadMovies() async throws {
+        if movies.isEmpty {
+            viewState = .loading
+        }
         do {
             movies = try await repository.fetchMovieList(page: currentPage)
+            isHasLoaded = true
+            viewState = .success
         } catch {
+            isHasLoaded = false
             throw error
         }
     }
     
     func loadNextMovies() async throws {
+        guard !isNextPageLoading else { return }
+        isNextPageLoading = true
+        defer { isNextPageLoading = false }
+
         currentPage += 1
+
         do {
-            movies += try await repository.fetchMovieList(page: currentPage)
+            let newMovies = try await repository.fetchMovieList(page: currentPage)
+
+            let existingIDs = Set(movies.map { $0.id })
+            let uniqueMovies = newMovies.filter { !existingIDs.contains($0.id) }
+
+            movies += uniqueMovies
         } catch {
             throw error
         }

@@ -9,31 +9,31 @@ import SwiftUI
 
 struct FavoritesMoviesView: View {
     
-    @StateObject var viewModel: FavoritesViewModel
-    
-    init(repository: TMDBRepositoryProtocol) {
-        _viewModel = StateObject(wrappedValue: FavoritesViewModel(repository: repository))
-    }
+    @ObservedObject var viewModel: FavoritesViewModel
     
     var body: some View {
         Group {
-            mainContent
-                .overlay {
-                    switch viewModel.viewState {
-                    case .loading:
-                        LoaderView()
-                    case .success:
-                        EmptyView()
-                    case .error(let errorMessage):
-                        VStack {
-                            ErrorView(errorMessage: errorMessage)
-                            Spacer()
-                        }
+            switch viewModel.viewState {
+            case .loading:
+                ProgressView()
+                    .tint(.accentColor)
+            case .success:
+                if viewModel.favoritesMedia.isEmpty {
+                    VStack {
+                        Image(systemName: "star.fill")
+                            .font(.largeTitle)
+                            .foregroundStyle(.primary)
+                        Text("Favorites is empty")
                     }
+                } else {
+                    mainContent
                 }
+            }
         }
         .task {
-            try? await viewModel.fetchFavorites()
+            if !viewModel.isLoaded {
+                try? await viewModel.fetchFavorites()
+            }
         }
     }
 }
@@ -43,7 +43,6 @@ struct FavoritesMoviesView: View {
 private extension FavoritesMoviesView {
     
     var mainContent: some View {
-        NavigationView {
             ScrollView {
                 LazyVStack {
                     cells
@@ -55,17 +54,17 @@ private extension FavoritesMoviesView {
                     try? await viewModel.fetchFavorites()
                 }
             }
-            .navigationTitle("Favorites")
-        }
     }
     
     var cells: some View {
         ForEach(viewModel.favoritesMedia, id: \.id) { media in
-            MediaPreviewCell(media: media) { url in
-                try? await viewModel.setImage(url)
-            } onFavoritesTapped: {
-                Task {
-                    try? await viewModel.removeFromFavorites(media)
+            NavigationLink(value: media.id) {
+                MediaPreviewCell(media: media) { url in
+                    try? await viewModel.setImage(url)
+                } onFavoritesTapped: {
+                    Task {
+                        try? await viewModel.removeFromFavorites(media)
+                    }
                 }
             }
         }

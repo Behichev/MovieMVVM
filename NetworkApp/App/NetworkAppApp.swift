@@ -23,9 +23,10 @@ struct NetworkAppApp: App {
         }
     }
     
-    @StateObject var authenticationStore: AuthenticationStore
+    @StateObject private var authenticationStore: AuthenticationStore
+    @StateObject private var errorManager = ErrorManager()
     //MARK: Services
-    private var networkService: NetworkService = NetworkLayer()
+    private var networkService: NetworkServiceProtocol = NetworkService()
     private var imageService: ImageLoaderService = TMDBImageLoader()
     private var keychainService = KeychainService()
     private var moviesStorage = MoviesStorage()
@@ -35,7 +36,8 @@ struct NetworkAppApp: App {
     init() {
         repository = TMDBRepository(networkService: networkService,
                                     imageService: imageService,
-                                    keychainService: keychainService, dataSource: moviesStorage)
+                                    keychainService: keychainService,
+                                    dataSource: moviesStorage)
         let authenticationStore = AuthenticationStore(repository: repository,
                                                       keychainService: keychainService)
         _authenticationStore = StateObject(wrappedValue: authenticationStore)
@@ -53,11 +55,15 @@ struct NetworkAppApp: App {
                                imageService: imageService,
                                repository: repository,
                                keychainService: keychainService)
-                        .environmentObject(authenticationStore)
+                    .environmentObject(authenticationStore)
                 }
             }
-            
+            .overlay {
+                if errorManager.showError {
+                    ErrorView(errorMessage: errorManager.currentError ?? "")
+                }
+            }
+            .environmentObject(errorManager)
         }
-        
     }
 }

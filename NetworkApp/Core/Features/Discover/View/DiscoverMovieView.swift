@@ -9,61 +9,68 @@ import SwiftUI
 
 struct DiscoverMovieView: View {
     
-    @StateObject private var viewModel: DiscoverMovieViewModel
-    private let repository: TMDBRepositoryProtocol
-    
-    init(repository: TMDBRepositoryProtocol) {
-        self.repository = repository
-        _viewModel = StateObject(wrappedValue: DiscoverMovieViewModel(repository: repository))
-    }
+    @ObservedObject var viewModel: DiscoverMovieViewModel
     
     var body: some View {
-        switch viewModel.viewState {
-        case .loading:
-            mainContent
-                .overlay {
-                    LoaderView()
+        ScrollView {
+            switch viewModel.viewState {
+            case .loading:
+                ProgressView()
+            case .success:
+                if viewModel.movies.isEmpty {
+                    VStack {
+                        Image(systemName: "movieclapper")
+                            .font(.largeTitle)
+                            .foregroundStyle(.primary)
+                        Text("Movies is empty")
+                    }
+                    
+                } else {
+                    mainContent
+                        .padding()
                 }
-        case .success:
-            mainContent
+            }
+        }
+        .task {
+            if !viewModel.isHasLoaded {
+                try? await viewModel.loadMovies()
+            }
         }
     }
-    
 }
 
 //MARK: UI Components
 
 private extension DiscoverMovieView {
     var mainContent: some View {
-        NavigationView {
-            ScrollView {
-                LazyVStack {
-                    ForEach(viewModel.movies) { movie in
-                        NavigationLink(destination: MovieDetailsView(repository: repository, movieID: movie.id)) {
-                            MediaPreviewCell(media: movie) { path in
-                               try? await viewModel.setImage(path)
-                            } onFavoritesTapped: {
-                                //
-                            }
-                            .task {
-                                if viewModel.hasReachedEnd(of: movie) {
-                                   try? await viewModel.loadNextMovies()
-                                }
-                            }
-                        }
-                        .buttonStyle(.plain)
+        LazyVStack {
+            ForEach(viewModel.movies, id: \.id) { movie in
+                
+                NavigationLink(value: movie.id) {
+                    MediaPreviewCell(media: movie) { path in
+                        try? await viewModel.setImage(path)
+                    } onFavoritesTapped: {
+                        print("Add to favorites")
                     }
                 }
+                .buttonStyle(.plain)
+            
+                if viewModel.hasReachedEnd(of: movie) {
+                    ProgressView()
+                        .tint(.accentColor)
+                        .task{
+                            if !viewModel.isNextPageLoading {
+                                try? await viewModel.loadNextMovies()
+                            }
+                        }
+                }
             }
-            .padding(.horizontal)
-            .navigationTitle("Movies")
-        }
-        .task {
-            try? await viewModel.loadMovies()
         }
     }
 }
 
 #Preview {
-    DiscoverMovieView(repository: TMDBRepository(networkService: NetworkLayer(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage()))
+    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage())
+    let viewModel = DiscoverMovieViewModel(repository: repository)
+    DiscoverMovieView(viewModel: viewModel)
 }

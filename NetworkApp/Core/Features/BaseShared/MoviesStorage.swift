@@ -14,7 +14,6 @@ final class MoviesStorage: MoviesStorageProtocol {
     private var moviesList: [MediaItem] = []
     private var moviesCache: [Movie] = []
     
-    
     func getTrendingMovies() -> [MediaItem] {
         return trendingMovies
     }

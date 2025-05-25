@@ -12,8 +12,9 @@ final class TrendingMediaViewModel: ObservableObject {
     
     @Published var media: [MediaItem] = []
     @Published var viewState: TrendingMediaViewState = .loading
+    var isLoaded = false
     
-    private let repository: TMDBRepositoryProtocol
+    let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
@@ -22,16 +23,19 @@ final class TrendingMediaViewModel: ObservableObject {
     enum TrendingMediaViewState {
         case loading
         case success
-        case error(message: String)
     }
     
     func loadMedia() async throws {
-        viewState = .loading
         do {
+            if media.isEmpty {
+                viewState = .loading
+            }
+            
             media = try await repository.fetchTrendingMedia()
             viewState = .success
+            isLoaded = true
         } catch {
-            viewState = .error(message: error.localizedDescription)
+            print("\(error)")
         }
     }
     
@@ -40,7 +44,8 @@ final class TrendingMediaViewModel: ObservableObject {
             updateFavorite(item)
             try await repository.favoritesToggle(item)
         } catch {
-            viewState = .error(message: error.localizedDescription)
+            //Update Item
+            //TODO: Reset toggle
             throw error
         }
     }
