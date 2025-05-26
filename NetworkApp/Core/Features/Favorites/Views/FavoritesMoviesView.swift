@@ -67,6 +67,7 @@ private extension FavoritesMoviesView {
                     }
                 }
             }
+            .buttonStyle(.plain)
         }
     }
 }

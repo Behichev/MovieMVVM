@@ -6,15 +6,15 @@
 //
 
 import Foundation
-//TODO: Toast Notification Service
+
 final class TMDBRepository: TMDBRepositoryProtocol {
     
     private let networkService: NetworkServiceProtocol
     private let imageService: ImageLoaderService
     private let keychainService: SecureStorable
     private let userID: String
-    private weak var errorManager: ErrorManager?
     
+    private var errorManager: ErrorManager
     private var authEndpoint: AuthEndpoint?
     private var token: TMDBToken?
     
@@ -23,11 +23,13 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     init(networkService: NetworkServiceProtocol,
          imageService: ImageLoaderService,
          keychainService: SecureStorable,
-         dataSource: MoviesStorageProtocol) {
+         dataSource: MoviesStorageProtocol,
+         errorManager: ErrorManager) {
         self.networkService = networkService
         self.imageService = imageService
         self.keychainService = keychainService
         self.dataSource = dataSource
+        self.errorManager = errorManager
         
         userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
     }
@@ -35,7 +37,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     func setErrorManager(_ errorManager: ErrorManager) {
         self.errorManager = errorManager
     }
-    
+    //MARK: - Authorization
     func requestToken() async throws {
         do {
             authEndpoint = .newToken(apiKey: Constants.APIKeys.token)
@@ -51,14 +53,11 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         guard let authEndpoint else { return }
         do {
             try await networkService.performPostRequest(from: authEndpoint)
-        } catch NetworkError.invalidCredentials {
-            
-            await MainActor.run {
-                errorManager?.showError("\(NetworkError.invalidCredentials.localizedDescription)")
-            }
-            
+        } catch let authError as NetworkError {
+            await errorManager.showError(authError.localizedDescription)
             throw NetworkError.invalidCredentials
         } catch {
+            await errorManager.showError("\(NetworkError.invalidCredentials.localizedDescription)")
             throw error
         }
     }
@@ -70,6 +69,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             let token: SessionModel = try await networkService.performRequest(from: authEndpoint)
             keychainService.save(token.sessionId, forKey: Constants.KeychainKeys.session.rawValue)
         } catch {
+            await errorManager.showError("\(error.localizedDescription)")
             throw error
         }
     }
@@ -80,6 +80,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         do {
             try await networkService.performPostRequest(from: authEndpoint)
         } catch {
+            await errorManager.showError("\(error.localizedDescription)")
             throw error
         }
     }
@@ -96,7 +97,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             throw error
         }
     }
-    
+  //MARK: - Movies/Shows
     func fetchTrendingMedia() async throws -> [MediaItem] {
         do {
             let localMedia = dataSource.getTrendingMovies()
@@ -152,6 +153,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, item: item))
             dataSource.addToFavorites(item)
         } catch {
+            await errorManager.showError("\(error.localizedDescription)")
             throw error
         }
     }
@@ -163,6 +165,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: deletedItem))
             dataSource.removeFromFavorites(item)
         } catch {
+            await errorManager.showError("\(error.localizedDescription)")
             throw error
         }
     }
@@ -175,17 +178,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
                 try await addMovieToFavorite(item)
             }
         } catch {
-            //Toast View Error here
-        }
-    }
-    
-    func loadImage(_ path: String) async throws -> Data {
-        do {
-            let url = try imageService.prepareImagePath(from: path)
-            let data = try await imageService.loadImageData(from: url)
-            return data
-        } catch {
-            throw error
+            await errorManager.showError("\(error.localizedDescription)")
         }
     }
     
@@ -197,7 +190,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             
             return result.results
         } catch {
-            //Toast View error here
+            await errorManager.showError("\(error.localizedDescription)")
             return dataSource.getMoviesList()
         }
     }
@@ -209,8 +202,20 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             do {
                 return try await networkService.performRequest(from: MediaEndpoint.movieDetails(movieID: "\(id)"))
             } catch {
+                await errorManager.showError("\(error.localizedDescription)")
                 throw error
             }
+        }
+    }
+    //MARK: - Media
+    func loadImage(_ path: String) async throws -> Data {
+        do {
+            let url = try imageService.prepareImagePath(from: path)
+            let data = try await imageService.loadImageData(from: url)
+            return data
+        } catch {
+            
+            throw error
         }
     }
 }

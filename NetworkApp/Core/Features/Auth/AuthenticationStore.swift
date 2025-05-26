@@ -10,7 +10,7 @@ import Foundation
 @MainActor
 final class AuthenticationStore: ObservableObject {
     
-    @Published var isAuthenticated = true
+    @Published var isAuthenticated = false
     
     private let repository: TMDBRepositoryProtocol
     private let keychainService: SecureStorable

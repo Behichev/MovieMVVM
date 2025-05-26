@@ -24,7 +24,7 @@ struct NetworkAppApp: App {
     }
     
     @StateObject private var authenticationStore: AuthenticationStore
-    @StateObject private var errorManager = ErrorManager()
+    @StateObject private var errorManager: ErrorManager
     //MARK: Services
     private var networkService: NetworkServiceProtocol = NetworkService()
     private var imageService: ImageLoaderService = TMDBImageLoader()
@@ -34,10 +34,12 @@ struct NetworkAppApp: App {
     private var repository: TMDBRepositoryProtocol
     //MARK: Init
     init() {
+        let errorManager = ErrorManager()
+        _errorManager = StateObject(wrappedValue: errorManager)
         repository = TMDBRepository(networkService: networkService,
                                     imageService: imageService,
                                     keychainService: keychainService,
-                                    dataSource: moviesStorage)
+                                    dataSource: moviesStorage, errorManager: errorManager)
         let authenticationStore = AuthenticationStore(repository: repository,
                                                       keychainService: keychainService)
         _authenticationStore = StateObject(wrappedValue: authenticationStore)
@@ -45,25 +47,38 @@ struct NetworkAppApp: App {
     //MARK: Scene
     var body: some Scene {
         WindowGroup {
-            Group {
-                switch appState {
-                case .login:
-                    LoginView(repository: repository)
+            ZStack {
+                Group {
+                    switch appState {
+                    case .login:
+                        LoginView(repository: repository)
+                            .environmentObject(authenticationStore)
+                    case .authenticated:
+                        TabBarView(networkService: networkService,
+                                   imageService: imageService,
+                                   repository: repository,
+                                   keychainService: keychainService)
                         .environmentObject(authenticationStore)
-                case .authenticated:
-                    TabBarView(networkService: networkService,
-                               imageService: imageService,
-                               repository: repository,
-                               keychainService: keychainService)
-                    .environmentObject(authenticationStore)
+                    }
                 }
-            }
-            .overlay {
+                
                 if errorManager.showError {
-                    ErrorView(errorMessage: errorManager.currentError ?? "")
+                    errorView
                 }
             }
             .environmentObject(errorManager)
+        }
+    }
+    
+    private var errorView: some View {
+        GeometryReader { geometry in
+                VStack {
+                    ErrorView(errorMessage: errorManager.currentError ?? "")
+                    Spacer()
+                }
+            
+            .frame(width: geometry.size.width,
+                   height: geometry.size.height)
         }
     }
 }

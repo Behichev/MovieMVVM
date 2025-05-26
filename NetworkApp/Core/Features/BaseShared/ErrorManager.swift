@@ -7,7 +7,9 @@
 
 import Foundation
 
+@MainActor
 final class ErrorManager: ObservableObject {
+    
     @Published var currentError: String? = nil
     @Published var showError: Bool = false
     

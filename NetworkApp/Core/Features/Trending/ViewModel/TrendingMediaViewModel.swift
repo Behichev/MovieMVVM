@@ -44,8 +44,7 @@ final class TrendingMediaViewModel: ObservableObject {
             updateFavorite(item)
             try await repository.favoritesToggle(item)
         } catch {
-            //Update Item
-            //TODO: Reset toggle
+            updateFavorite(item)
             throw error
         }
     }

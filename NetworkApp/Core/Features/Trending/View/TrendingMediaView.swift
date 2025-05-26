@@ -22,6 +22,11 @@ struct TrendingMediaView: View {
                     .padding()
             }
         }
+        .refreshable {
+            Task {
+                try? await viewModel.loadMedia()
+            }
+        }
         .task {
             if !viewModel.isLoaded {
                 try? await viewModel.loadMedia()
@@ -38,11 +43,6 @@ private extension TrendingMediaView {
                 cells
                     .buttonStyle(.plain)
             }
-        .refreshable {
-            Task {
-                try? await viewModel.loadMedia()
-            }
-        }
     }
     
     var cells: some View {
@@ -56,6 +56,7 @@ private extension TrendingMediaView {
                     }
                 }
             }
+            .buttonStyle(.plain)
         }
     }
 }

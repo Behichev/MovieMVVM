@@ -70,7 +70,7 @@ private extension DiscoverMovieView {
 }
 
 #Preview {
-    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage())
+    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage(), errorManager: ErrorManager())
     let viewModel = DiscoverMovieViewModel(repository: repository)
     DiscoverMovieView(viewModel: viewModel)
 }

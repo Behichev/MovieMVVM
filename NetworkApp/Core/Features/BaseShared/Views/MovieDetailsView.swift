@@ -25,6 +25,6 @@ struct MovieDetailsView: View {
 }
 
 #Preview {
-    let repo = TMDBRepository(networkService: NetworkService(),imageService: TMDBImageLoader(), keychainService: KeychainService(),dataSource: MoviesStorage())
+    let repo = TMDBRepository(networkService: NetworkService(),imageService: TMDBImageLoader(), keychainService: KeychainService(),dataSource: MoviesStorage(), errorManager: ErrorManager())
     MovieDetailsView(repository: repo, movieID: 12)
 }
