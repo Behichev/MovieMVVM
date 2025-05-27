@@ -9,8 +9,8 @@ import SwiftUI
 
 struct ErrorView: View {
     
-    let errorMessage: String
-    @EnvironmentObject private var errorManager: ErrorManager
+    var errorMessage: String
+    var hide: () -> ()
     @State private var offsetY: CGFloat = -150
     
     var body: some View {
@@ -56,7 +56,7 @@ struct ErrorView: View {
                             offsetY = -150
                         }
                         
-                        errorManager.hideError()
+                        hide()
                         
                     } else {
                         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {

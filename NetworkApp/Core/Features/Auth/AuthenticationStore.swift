@@ -10,7 +10,7 @@ import Foundation
 @MainActor
 final class AuthenticationStore: ObservableObject {
     
-    @Published var isAuthenticated = false
+    @Published var isAuthenticated: Bool
     
     private let repository: TMDBRepositoryProtocol
     private let keychainService: SecureStorable
@@ -18,18 +18,16 @@ final class AuthenticationStore: ObservableObject {
     private var validationTask: Task<Void, Never>? = nil
     
     private var sessionID: String
-    private var userID: String
+    private var userID: Int
     
     init(repository: TMDBRepositoryProtocol, keychainService: SecureStorable) {
         self.repository = repository
         self.keychainService = keychainService
         
         sessionID = keychainService.get(forKey: Constants.KeychainKeys.session.rawValue, as: String.self) ?? ""
-        userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
+        userID = keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? -1
         
-        validationTask = Task {
-            await checkSession()
-        }
+        isAuthenticated = userID >= 0
     }
     
     func checkSession() async {
@@ -55,6 +53,6 @@ final class AuthenticationStore: ObservableObject {
     
     private func updateKeys() {
         sessionID = keychainService.get(forKey: Constants.KeychainKeys.session.rawValue, as: String.self) ?? ""
-        userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
+        userID = keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? -1
     }
 }

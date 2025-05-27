@@ -73,10 +73,11 @@ struct NetworkAppApp: App {
     private var errorView: some View {
         GeometryReader { geometry in
                 VStack {
-                    ErrorView(errorMessage: errorManager.currentError ?? "")
+                    ErrorView(errorMessage: errorManager.currentError ?? "", hide: {
+                        errorManager.hideError()
+                    })
                     Spacer()
                 }
-            
             .frame(width: geometry.size.width,
                    height: geometry.size.height)
         }

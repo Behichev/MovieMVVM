@@ -24,7 +24,6 @@ struct DiscoverMovieView: View {
                             .foregroundStyle(.primary)
                         Text("Movies is empty")
                     }
-                    
                 } else {
                     mainContent
                         .padding()
