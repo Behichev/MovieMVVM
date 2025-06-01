@@ -7,31 +7,64 @@
 
 import SwiftUI
 
+enum Pages: Hashable {
+    case trending
+    case favorites
+    case discover
+    case userProfile
+    case movie(movieID: Int)
+}
+
+@MainActor
+class Coordinator: ObservableObject {
+    @Published var path = NavigationPath()
+    var repository: TMDBRepositoryProtocol
+    
+    init(repository: TMDBRepositoryProtocol) {
+        self.repository = repository
+    }
+    
+    func push(_ page: Pages) {
+        path.append(page)
+    }
+    
+    func pop() {
+        print("before ----: \(path)")
+        path.removeLast()
+        print("after ----: \(path)")
+    }
+    
+    @ViewBuilder
+    func build(_ page: Pages) -> some View {
+        switch page {
+        case .trending:
+            TrendingMediaView(viewModel: TrendingMediaViewModel(repository: repository))
+        case .favorites:
+            FavoritesMoviesView(viewModel: FavoritesViewModel(repository: repository))
+        case .discover:
+            DiscoverMovieView(viewModel: DiscoverMovieViewModel(repository: self.repository))
+        case .userProfile:
+            UserView(viewModel: UserViewModel(repository: repository))
+        case .movie(let movieID):
+            MovieDetailsView(repository: repository, movieID: movieID)
+        }
+    }
+}
+
 struct TabBarView: View {
     
-    private let networkService: NetworkServiceProtocol
-    private let imageService: ImageLoaderService
-    private let keychainService: SecureStorable
+    @ObservedObject var trendingCoordinator: Coordinator
+    @ObservedObject var discoverCoordinator: Coordinator
+    @ObservedObject var favoritesCoordinator: Coordinator
+    
     private let repository: TMDBRepositoryProtocol
     
-    @ObservedObject private var discoverViewModel: DiscoverMovieViewModel
-    @ObservedObject private var favoritesViewModel: FavoritesViewModel
-    @ObservedObject private var trendingViewModel: TrendingMediaViewModel
-    @ObservedObject private var userViewModel: UserViewModel
-    
-    init(networkService: NetworkServiceProtocol,
-         imageService: ImageLoaderService,
-         repository: TMDBRepositoryProtocol,
-         keychainService: SecureStorable) {
-        self.networkService = networkService
-        self.imageService = imageService
+    init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
-        self.keychainService = keychainService
         
-        self.discoverViewModel =  DiscoverMovieViewModel(repository: repository)
-        self.trendingViewModel = TrendingMediaViewModel(repository: repository)
-        self.favoritesViewModel = FavoritesViewModel(repository: repository)
-        self.userViewModel = UserViewModel(repository: repository)
+        _trendingCoordinator = ObservedObject(wrappedValue: Coordinator(repository: repository))
+        _discoverCoordinator = ObservedObject(wrappedValue: Coordinator(repository: repository))
+        _favoritesCoordinator = ObservedObject(wrappedValue: Coordinator(repository: repository))
     }
     
     enum Assets: String {
@@ -43,38 +76,24 @@ struct TabBarView: View {
     
     var body: some View {
         TabView {
-            NavigationStack {
-                trending
-                    .navigationTitle("Trending")
-                    .navigationDestination(for: Int.self) { movieID in
-                        MovieDetailsView(repository: trendingViewModel.repository, movieID: movieID)
-                    }
-            }
-            .tabItem {
-                Label("Trending", systemImage: Assets.trendingImageName.rawValue)
-            }
+    
+            trending
+                .navigationTitle("Trending")
+                .tabItem {
+                    Label("Trending", systemImage: Assets.trendingImageName.rawValue)
+                }
             
-            NavigationStack {
-                discoverMovie
-                    .navigationTitle("Movies")
-                    .navigationDestination(for: Int.self) { movieID in
-                        MovieDetailsView(repository: discoverViewModel.repository, movieID: movieID)
-                    }
-            }
-            .tabItem{
-                Label("Movies", systemImage: Assets.discoverImageName.rawValue)
-            }
+            discoverMovie
+                .navigationTitle("Movies")
+                .tabItem {
+                    Label("Movies", systemImage: Assets.discoverImageName.rawValue)
+                }
             
-            NavigationStack {
-                favoritesMovies
-                    .navigationTitle("Favorite")
-                    .navigationDestination(for: Int.self) { movieID in
-                        MovieDetailsView(repository: favoritesViewModel.repository, movieID: movieID)
-                    }
-            }
-            .tabItem {
-                Label("Favorites", systemImage: Assets.favoritesImageName.rawValue)
-            }
+            favoritesMovies
+                .navigationTitle("Favorites")
+                .tabItem {
+                    Label("Favorites", systemImage: Assets.favoritesImageName.rawValue)
+                }
             
             user
                 .tabItem {
@@ -86,18 +105,40 @@ struct TabBarView: View {
 
 private extension TabBarView {
     private var discoverMovie: some View {
-        DiscoverMovieView(viewModel: discoverViewModel)
+        NavigationStack(path: $discoverCoordinator.path) {
+            discoverCoordinator.build(.discover)
+                .navigationDestination(for: Pages.self) { page in
+                    discoverCoordinator.build(page)
+                }
+        }
+        .onChange(of: discoverCoordinator.path) { newValue in
+            print("🌀 path changed:", newValue)
+        }
+        .environmentObject(discoverCoordinator)
+        
     }
     
     private var trending: some View {
-        TrendingMediaView(viewModel: trendingViewModel)
+        NavigationStack(path: $trendingCoordinator.path) {
+            trendingCoordinator.build(.trending)
+                .navigationDestination(for: Pages.self) { page in
+                    trendingCoordinator.build(page)
+                }
+        }
+        .environmentObject(trendingCoordinator)
     }
     
     private var favoritesMovies: some View {
-        FavoritesMoviesView(viewModel: favoritesViewModel)
+        NavigationStack(path: $favoritesCoordinator.path) {
+            favoritesCoordinator.build(.favorites)
+                .navigationDestination(for: Pages.self) { page in
+                    favoritesCoordinator.build(page)
+                }
+        }
+        .environmentObject(favoritesCoordinator)
     }
     
     private var user: some View {
-        UserView(viewModel: userViewModel)
+       UserView(viewModel: UserViewModel(repository: repository))
     }
 }

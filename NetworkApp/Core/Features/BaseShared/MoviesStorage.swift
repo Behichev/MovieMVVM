@@ -34,7 +34,6 @@ final class MoviesStorage: MoviesStorageProtocol {
         }
     }
     
-    
     func saveMoviesList(_ movies: [MediaItem]) {
         moviesList = movies
     }

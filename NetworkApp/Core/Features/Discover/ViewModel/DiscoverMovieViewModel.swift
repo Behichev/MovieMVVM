@@ -24,6 +24,10 @@ final class DiscoverMovieViewModel: ObservableObject {
         self.repository = repository
     }
     
+    deinit {
+        print("DEBUG: Discover deinit")
+    }
+    
     enum DiscoverViewState {
         case loading
         case success

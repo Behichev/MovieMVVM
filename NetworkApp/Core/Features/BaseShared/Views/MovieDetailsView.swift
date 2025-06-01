@@ -18,6 +18,9 @@ struct MovieDetailsView: View {
     
     var body: some View {
         Text(viewModel.movie?.title ?? "No Title")
+        Text(viewModel.movie?.overview ?? "")
+        Text("Budget: \(viewModel.movie?.budget ?? 0)")
+        
             .task {
                try? await viewModel.getMovieDetails()
             }

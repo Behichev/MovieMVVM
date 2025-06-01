@@ -9,22 +9,9 @@ import SwiftUI
 
 @main
 struct NetworkAppApp: App {
-    //MARK: App State
-    enum AppState {
-        case login
-        case authenticated
-    }
-    
-    private var appState: AppState {
-        if authenticationStore.isAuthenticated {
-            return .authenticated
-        } else {
-            return .login
-        }
-    }
-    
-    @StateObject private var authenticationStore: AuthenticationStore
-    @StateObject private var errorManager: ErrorManager
+
+    @ObservedObject private var authenticationStore: AuthenticationStore
+    @ObservedObject private var errorManager: ErrorManager
     //MARK: Services
     private var networkService: NetworkServiceProtocol = NetworkService()
     private var imageService: ImageLoaderService = TMDBImageLoader()
@@ -35,33 +22,22 @@ struct NetworkAppApp: App {
     //MARK: Init
     init() {
         let errorManager = ErrorManager()
-        _errorManager = StateObject(wrappedValue: errorManager)
+        _errorManager = ObservedObject(wrappedValue: errorManager)
         repository = TMDBRepository(networkService: networkService,
                                     imageService: imageService,
                                     keychainService: keychainService,
                                     dataSource: moviesStorage, errorManager: errorManager)
         let authenticationStore = AuthenticationStore(repository: repository,
                                                       keychainService: keychainService)
-        _authenticationStore = StateObject(wrappedValue: authenticationStore)
+        _authenticationStore = ObservedObject(wrappedValue: authenticationStore)
     }
     //MARK: Scene
     var body: some Scene {
         WindowGroup {
             ZStack {
                 Group {
-                    switch appState {
-                    case .login:
-                        LoginView(repository: repository)
-                            .environmentObject(authenticationStore)
-                    case .authenticated:
-                        TabBarView(networkService: networkService,
-                                   imageService: imageService,
-                                   repository: repository,
-                                   keychainService: keychainService)
-                        .environmentObject(authenticationStore)
-                    }
+                    RootView(authenticationStore: authenticationStore, repository: repository)
                 }
-                
                 if errorManager.showError {
                     errorView
                 }
@@ -80,6 +56,41 @@ struct NetworkAppApp: App {
                 }
             .frame(width: geometry.size.width,
                    height: geometry.size.height)
+        }
+    }
+}
+
+struct RootView: View {
+    
+    @ObservedObject private var authenticationStore: AuthenticationStore
+    private var repository: TMDBRepositoryProtocol
+    
+    init(authenticationStore: AuthenticationStore, repository: TMDBRepositoryProtocol) {
+        self.authenticationStore = authenticationStore
+        self.repository = repository
+    }
+    
+    enum AppState {
+        case login
+        case authenticated
+    }
+    
+    private var appState: AppState {
+        if authenticationStore.isAuthenticated {
+            return .authenticated
+        } else {
+            return .login
+        }
+    }
+    
+    var body: some View {
+        switch appState {
+        case .login:
+            LoginView(repository: repository)
+                .environmentObject(authenticationStore)
+        case .authenticated:
+            TabBarView(repository: repository)
+            .environmentObject(authenticationStore)
         }
     }
 }

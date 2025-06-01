@@ -10,6 +10,7 @@ import SwiftUI
 struct FavoritesMoviesView: View {
     
     @ObservedObject var viewModel: FavoritesViewModel
+    @EnvironmentObject var coordinator: Coordinator
     
     var body: some View {
         Group {
@@ -58,7 +59,6 @@ private extension FavoritesMoviesView {
     
     var cells: some View {
         ForEach(viewModel.favoritesMedia, id: \.id) { media in
-            NavigationLink(value: media.id) {
                 MediaPreviewCell(media: media) { url in
                     try? await viewModel.setImage(url)
                 } onFavoritesTapped: {
@@ -66,8 +66,9 @@ private extension FavoritesMoviesView {
                         try? await viewModel.removeFromFavorites(media)
                     }
                 }
-            }
-            .buttonStyle(.plain)
+                .onTapGesture {
+                    coordinator.push(.movie(movieID: media.id))
+                }
         }
     }
 }

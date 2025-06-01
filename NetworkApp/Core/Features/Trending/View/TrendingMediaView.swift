@@ -10,6 +10,7 @@ import SwiftUI
 struct TrendingMediaView: View {
     
     @ObservedObject var viewModel: TrendingMediaViewModel
+    @EnvironmentObject var coordinator: Coordinator
     
     var body: some View {
         ScrollView {
@@ -39,24 +40,24 @@ struct TrendingMediaView: View {
 
 private extension TrendingMediaView {
     var mainContent: some View {
-            LazyVStack {
-                cells
-                    .buttonStyle(.plain)
-            }
+        LazyVStack {
+            cells
+                .buttonStyle(.plain)
+        }
     }
     
     var cells: some View {
         ForEach(viewModel.media, id: \.id) { media in
-            NavigationLink(value: media.id) {
-                MediaPreviewCell(media: media) { url in
-                    try? await viewModel.setImage(url)
-                } onFavoritesTapped: {
-                    Task {
-                        try? await viewModel.favoritesToggle(media)
-                    }
+            MediaPreviewCell(media: media) { url in
+                try? await viewModel.setImage(url)
+            } onFavoritesTapped: {
+                Task {
+                    try? await viewModel.favoritesToggle(media)
                 }
             }
-            .buttonStyle(.plain)
+            .onTapGesture {
+                coordinator.push(.movie(movieID: media.id))
+            }
         }
     }
 }

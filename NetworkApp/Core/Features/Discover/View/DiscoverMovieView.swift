@@ -9,7 +9,8 @@ import SwiftUI
 
 struct DiscoverMovieView: View {
     
-    @ObservedObject var viewModel: DiscoverMovieViewModel
+    @StateObject var viewModel: DiscoverMovieViewModel
+    @EnvironmentObject var coordinator: Coordinator
     
     var body: some View {
         ScrollView {
@@ -29,12 +30,14 @@ struct DiscoverMovieView: View {
                         .padding()
                 }
             }
+            
         }
         .task {
             if !viewModel.isHasLoaded {
                 try? await viewModel.loadMovies()
             }
         }
+        
     }
 }
 
@@ -45,14 +48,14 @@ private extension DiscoverMovieView {
         LazyVStack {
             ForEach(viewModel.movies, id: \.id) { movie in
                 
-                NavigationLink(value: movie.id) {
                     MediaPreviewCell(media: movie) { path in
                         try? await viewModel.setImage(path)
                     } onFavoritesTapped: {
                         print("Add to favorites")
                     }
-                }
-                .buttonStyle(.plain)
+                    .onTapGesture {
+                        coordinator.push(.movie(movieID: movie.id))
+                    }
             
                 if viewModel.hasReachedEnd(of: movie) {
                     ProgressView()
