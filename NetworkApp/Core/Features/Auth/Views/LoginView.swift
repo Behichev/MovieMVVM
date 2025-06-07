@@ -119,7 +119,7 @@ private extension LoginView {
             Button("Sign In") {
                 Task {
                     try await viewModel.signIn()
-                    await authentication.checkSession()
+                    await authentication.createSession()
                 }
             }
             .disabled(viewModel.isLoggingDisabled)

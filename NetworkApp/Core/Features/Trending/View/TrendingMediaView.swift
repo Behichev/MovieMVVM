@@ -9,8 +9,8 @@ import SwiftUI
 
 struct TrendingMediaView: View {
     
-    @ObservedObject var viewModel: TrendingMediaViewModel
-    @EnvironmentObject var coordinator: Coordinator
+    @StateObject var viewModel: TrendingMediaViewModel
+    let onMediaTapped: (Int) -> Void
     
     var body: some View {
         ScrollView {
@@ -23,6 +23,7 @@ struct TrendingMediaView: View {
                     .padding()
             }
         }
+        .navigationTitle("Trending")
         .refreshable {
             Task {
                 try? await viewModel.loadMedia()
@@ -56,7 +57,7 @@ private extension TrendingMediaView {
                 }
             }
             .onTapGesture {
-                coordinator.push(.movie(movieID: media.id))
+                onMediaTapped(media.id)
             }
         }
     }

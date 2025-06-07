@@ -30,7 +30,7 @@ final class AuthenticationStore: ObservableObject {
         isAuthenticated = userID >= 0
     }
     
-    func checkSession() async {
+    func createSession() async {
         do {
             updateKeys()
             let _ = try await repository.fetchUser(with: Constants.APIKeys.key)

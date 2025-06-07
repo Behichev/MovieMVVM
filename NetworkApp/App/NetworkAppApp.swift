@@ -9,7 +9,7 @@ import SwiftUI
 
 @main
 struct NetworkAppApp: App {
-
+    //MARK: Observed
     @ObservedObject private var authenticationStore: AuthenticationStore
     @ObservedObject private var errorManager: ErrorManager
     //MARK: Services
@@ -36,7 +36,7 @@ struct NetworkAppApp: App {
         WindowGroup {
             ZStack {
                 Group {
-                    RootView(authenticationStore: authenticationStore, repository: repository)
+                    RootView(authStore: authenticationStore, repository: repository)
                 }
                 if errorManager.showError {
                     errorView
@@ -48,49 +48,15 @@ struct NetworkAppApp: App {
     
     private var errorView: some View {
         GeometryReader { geometry in
-                VStack {
-                    ErrorView(errorMessage: errorManager.currentError ?? "", hide: {
-                        errorManager.hideError()
-                    })
-                    Spacer()
-                }
+            VStack {
+                ErrorView(errorMessage: errorManager.currentError ?? "", hide: {
+                    errorManager.hideError()
+                })
+                Spacer()
+            }
             .frame(width: geometry.size.width,
                    height: geometry.size.height)
         }
     }
 }
 
-struct RootView: View {
-    
-    @ObservedObject private var authenticationStore: AuthenticationStore
-    private var repository: TMDBRepositoryProtocol
-    
-    init(authenticationStore: AuthenticationStore, repository: TMDBRepositoryProtocol) {
-        self.authenticationStore = authenticationStore
-        self.repository = repository
-    }
-    
-    enum AppState {
-        case login
-        case authenticated
-    }
-    
-    private var appState: AppState {
-        if authenticationStore.isAuthenticated {
-            return .authenticated
-        } else {
-            return .login
-        }
-    }
-    
-    var body: some View {
-        switch appState {
-        case .login:
-            LoginView(repository: repository)
-                .environmentObject(authenticationStore)
-        case .authenticated:
-            TabBarView(repository: repository)
-            .environmentObject(authenticationStore)
-        }
-    }
-}

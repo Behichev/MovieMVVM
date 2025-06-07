@@ -21,6 +21,7 @@ final class ErrorManager: ObservableObject {
         
         if autohide {
             hideTimer?.invalidate()
+            
             hideTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: false) { _ in
                 self.hideError()
             }

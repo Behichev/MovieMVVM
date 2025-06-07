@@ -9,8 +9,8 @@ import SwiftUI
 
 struct FavoritesMoviesView: View {
     
-    @ObservedObject var viewModel: FavoritesViewModel
-    @EnvironmentObject var coordinator: Coordinator
+    @StateObject var viewModel: FavoritesViewModel
+    let onMediaTapped: (Int) -> Void
     
     var body: some View {
         Group {
@@ -49,6 +49,7 @@ private extension FavoritesMoviesView {
                     cells
                 }
             }
+            .navigationTitle("Favorites")
             .padding()
             .refreshable {
                 Task {
@@ -59,16 +60,22 @@ private extension FavoritesMoviesView {
     
     var cells: some View {
         ForEach(viewModel.favoritesMedia, id: \.id) { media in
-                MediaPreviewCell(media: media) { url in
-                    try? await viewModel.setImage(url)
-                } onFavoritesTapped: {
-                    Task {
-                        try? await viewModel.removeFromFavorites(media)
-                    }
-                }
+                createCell(with: media)
                 .onTapGesture {
-                    coordinator.push(.movie(movieID: media.id))
+                    onMediaTapped(media.id)
                 }
         }
+    }
+    
+    @ViewBuilder
+    private func createCell(with mediaItem: MediaItem) -> some View {
+        MediaPreviewCell(media: mediaItem) { url in
+            try? await viewModel.setImage(url)
+        } onFavoritesTapped: {
+            Task {
+                try? await viewModel.removeFromFavorites(mediaItem)
+            }
+        }
+        
     }
 }

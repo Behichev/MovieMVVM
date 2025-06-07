@@ -10,7 +10,7 @@ import SwiftUI
 struct DiscoverMovieView: View {
     
     @StateObject var viewModel: DiscoverMovieViewModel
-    @EnvironmentObject var coordinator: Coordinator
+    let onMediaTapped: (Int) -> Void
     
     var body: some View {
         ScrollView {
@@ -30,8 +30,9 @@ struct DiscoverMovieView: View {
                         .padding()
                 }
             }
-            
+                
         }
+        .navigationTitle("Movies")
         .task {
             if !viewModel.isHasLoaded {
                 try? await viewModel.loadMovies()
@@ -54,9 +55,8 @@ private extension DiscoverMovieView {
                         print("Add to favorites")
                     }
                     .onTapGesture {
-                        coordinator.push(.movie(movieID: movie.id))
+                        onMediaTapped(movie.id)
                     }
-            
                 if viewModel.hasReachedEnd(of: movie) {
                     ProgressView()
                         .tint(.accentColor)
@@ -71,8 +71,3 @@ private extension DiscoverMovieView {
     }
 }
 
-#Preview {
-    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage(), errorManager: ErrorManager())
-    let viewModel = DiscoverMovieViewModel(repository: repository)
-    DiscoverMovieView(viewModel: viewModel)
-}

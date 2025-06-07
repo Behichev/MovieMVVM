@@ -15,12 +15,10 @@ struct MovieDetailsView: View {
         _viewModel = ObservedObject(wrappedValue: MovieDetailsViewModel(repository: repository, movieID: movieID))
     }
     
-    
     var body: some View {
         Text(viewModel.movie?.title ?? "No Title")
         Text(viewModel.movie?.overview ?? "")
         Text("Budget: \(viewModel.movie?.budget ?? 0)")
-        
             .task {
                try? await viewModel.getMovieDetails()
             }
