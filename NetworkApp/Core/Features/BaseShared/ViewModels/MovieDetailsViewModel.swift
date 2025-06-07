@@ -27,4 +27,14 @@ final class MovieDetailsViewModel: ObservableObject {
             throw error
         }
     }
+    
+    func setImage(_ path: String) async throws -> UIImage? {
+        do {
+            let data = try await repository.loadImage(path)
+            let image = UIImage(data: data)
+            return image
+        } catch {
+            throw error
+        }
+    }
 }

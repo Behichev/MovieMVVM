@@ -10,18 +10,34 @@ import SwiftUI
 struct MovieDetailsView: View {
     
     @ObservedObject private var viewModel: MovieDetailsViewModel
+    @State private var image: UIImage?
     
     init(repository: TMDBRepositoryProtocol, movieID: Int) {
         _viewModel = ObservedObject(wrappedValue: MovieDetailsViewModel(repository: repository, movieID: movieID))
     }
     
     var body: some View {
-        Text(viewModel.movie?.title ?? "No Title")
-        Text(viewModel.movie?.overview ?? "")
-        Text("Budget: \(viewModel.movie?.budget ?? 0)")
-            .task {
-               try? await viewModel.getMovieDetails()
+        VStack {
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 300)
+                    .cornerRadius(Constants.Design.LayoutConstants.cornerRadius.rawValue)
             }
+            Text(viewModel.movie?.title ?? "No Title")
+                .font(.largeTitle)
+                .bold()
+            Text(viewModel.movie?.overview ?? "")
+            Text("Budget: \(viewModel.movie?.budget ?? 0)")
+        }
+        .padding()
+        .task {
+            try? await viewModel.getMovieDetails()
+            if let imagePath = viewModel.movie?.posterPath {
+                image = try? await viewModel.setImage(imagePath)
+            }
+        }
     }
 }
 
