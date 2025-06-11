@@ -11,11 +11,12 @@ enum TrendingCoordinatorPages: Hashable {
     case details(id: Int)
 }
 
+@Observable
 final class TrendingCoordinator: Coordinator {
     
-    @Published var path = NavigationPath()
+     var path = NavigationPath()
     
-    let repository: TMDBRepositoryProtocol
+    @ObservationIgnored let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository

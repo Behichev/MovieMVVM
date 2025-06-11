@@ -7,24 +7,24 @@
 
 import Foundation
 
-@MainActor
+@Observable
 final class LoginViewModel: ObservableObject {
     
-    @Published var credentials = Credentials()
-    @Published var authState: AuthViewState = .login
-    @Published var isPasswordVisible = false
+    var credentials = Credentials()
+    var authState: AuthViewState = .login
+    var isPasswordVisible = false
     
-    var isInvalidCredentials = false
+    @ObservationIgnored var isInvalidCredentials = false
     
-    var isLoggingDisabled: Bool {
+    @ObservationIgnored var isLoggingDisabled: Bool {
         credentials.username.isEmpty || credentials.password.isEmpty
     }
     
-    var passwordThumbImageName: String {
+    @ObservationIgnored var passwordThumbImageName: String {
         isPasswordVisible ? "eye.slash.fill" : "eye.fill"
     }
     
-    private let repository: TMDBRepositoryProtocol
+    @ObservationIgnored private let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
@@ -35,6 +35,7 @@ final class LoginViewModel: ObservableObject {
         case loading
     }
     
+    @MainActor
     func signIn() async throws {
         authState = .loading
         do {

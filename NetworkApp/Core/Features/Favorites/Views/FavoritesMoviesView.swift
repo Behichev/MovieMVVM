@@ -9,26 +9,27 @@ import SwiftUI
 
 struct FavoritesMoviesView: View {
     
-    @StateObject var viewModel: FavoritesViewModel
+    @State var viewModel: FavoritesViewModel
     let onMediaTapped: (Int) -> Void
     
     var body: some View {
-        Group {
+        ScrollView {
             switch viewModel.viewState {
             case .loading:
                 ProgressView()
                     .tint(.accentColor)
             case .success:
                 if viewModel.favoritesMedia.isEmpty {
-                    VStack {
-                        Image(systemName: "star.fill")
-                            .font(.largeTitle)
-                            .foregroundStyle(.primary)
-                        Text("Favorites is empty")
-                    }
+                    emptyView
                 } else {
                     mainContent
                 }
+            }
+        }
+        .navigationTitle("Favorites")
+        .refreshable {
+            Task {
+                try? await viewModel.fetchFavorites()
             }
         }
         .task {
@@ -44,23 +45,24 @@ struct FavoritesMoviesView: View {
 private extension FavoritesMoviesView {
     
     var mainContent: some View {
-            ScrollView {
-                LazyVStack {
-                    cells
-                }
-            }
-            .navigationTitle("Favorites")
-            .padding()
-            .refreshable {
-                Task {
-                    try? await viewModel.fetchFavorites()
-                }
-            }
+        LazyVStack {
+            cells
+        }
+        .padding()
+    }
+    
+    var emptyView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "star.fill")
+                .font(.largeTitle)
+                .foregroundStyle(.primary)
+            Text("Favorites is empty")
+        }
     }
     
     var cells: some View {
         ForEach(viewModel.favoritesMedia, id: \.id) { media in
-                createCell(with: media)
+            createCell(with: media)
                 .onTapGesture {
                     onMediaTapped(media.id)
                 }

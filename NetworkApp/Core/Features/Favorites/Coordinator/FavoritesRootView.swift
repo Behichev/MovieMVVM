@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct FavoritesCoordinatorView: View {
+struct FavoritesRootView: View {
     
-    @ObservedObject var coordinator: FavoritesCoordinator
+    @Bindable var coordinator: FavoritesCoordinator
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {

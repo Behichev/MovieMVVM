@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-final class RootCoordinator: ObservableObject {
+@Observable
+final class RootCoordinator {
     
     private let authStore: AuthenticationStore
     private let repository: TMDBRepositoryProtocol
@@ -30,11 +31,11 @@ final class RootCoordinator: ObservableObject {
         if authStore.isAuthenticated {
             if let tabBarCoordinator = tabBarCoordinator {
                 tabBarCoordinator.rootView
-                    .environmentObject(authStore)
+                    .environment(authStore)
             }
         } else {
             LoginView(repository: repository)
-                .environmentObject(authStore)
+                .environment(authStore)
         }
     }
 }

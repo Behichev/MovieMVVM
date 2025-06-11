@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-@MainActor
-final class FavoritesViewModel: ObservableObject {
+@Observable
+final class FavoritesViewModel {
     
-    @Published var favoritesMedia: [MediaItem] = []
-    @Published var viewState: TrendingViewState = .loading
+    var favoritesMedia: [MediaItem] = []
+    var viewState: TrendingViewState = .loading
     
-    var isLoaded = false
-    let repository: TMDBRepositoryProtocol
+    @ObservationIgnored var isLoaded = false
+    @ObservationIgnored let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
@@ -25,6 +25,7 @@ final class FavoritesViewModel: ObservableObject {
         case success
     }
     
+    @MainActor
     func fetchFavorites() async throws {
         if favoritesMedia.isEmpty {
             viewState = .loading
@@ -38,11 +39,13 @@ final class FavoritesViewModel: ObservableObject {
         }
     }
     
+    @MainActor
     func removeFromFavorites(_ item: MediaItem) async throws {
-        viewState = .loading
         do {
             if let index = favoritesMedia.firstIndex(where: {$0.id == item.id }) {
-                favoritesMedia.remove(at: index)
+                withAnimation {
+                    favoritesMedia.remove(at: index)
+                }
             }
             try? await repository.deleteMovieFromFavorites(item)
             viewState = .success

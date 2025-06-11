@@ -9,11 +9,11 @@ import SwiftUI
 
 struct MovieDetailsView: View {
     
-    @ObservedObject private var viewModel: MovieDetailsViewModel
+    @Bindable private var viewModel: MovieDetailsViewModel
     @State private var image: UIImage?
     
     init(repository: TMDBRepositoryProtocol, movieID: Int) {
-        _viewModel = ObservedObject(wrappedValue: MovieDetailsViewModel(repository: repository, movieID: movieID))
+        _viewModel = Bindable(wrappedValue: MovieDetailsViewModel(repository: repository, movieID: movieID))
     }
     
     var body: some View {

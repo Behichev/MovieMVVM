@@ -10,8 +10,8 @@ import SwiftUI
 @main
 struct NetworkAppApp: App {
     //MARK: Observed
-    @ObservedObject private var authenticationStore: AuthenticationStore
-    @ObservedObject private var errorManager: ErrorManager
+    @Bindable private var authenticationStore: AuthenticationStore
+    @Bindable private var errorManager: ErrorManager
     //MARK: Services
     private var networkService: NetworkServiceProtocol = NetworkService()
     private var imageService: ImageLoaderService = TMDBImageLoader()
@@ -22,14 +22,17 @@ struct NetworkAppApp: App {
     //MARK: Init
     init() {
         let errorManager = ErrorManager()
-        _errorManager = ObservedObject(wrappedValue: errorManager)
-        repository = TMDBRepository(networkService: networkService,
-                                    imageService: imageService,
-                                    keychainService: keychainService,
-                                    dataSource: moviesStorage, errorManager: errorManager)
+        _errorManager = Bindable(wrappedValue: errorManager)
+        repository = TMDBRepository(
+            networkService: networkService,
+            imageService: imageService,
+            keychainService: keychainService,
+            dataSource: moviesStorage,
+            errorManager: errorManager
+        )
         let authenticationStore = AuthenticationStore(repository: repository,
                                                       keychainService: keychainService)
-        _authenticationStore = ObservedObject(wrappedValue: authenticationStore)
+        _authenticationStore = Bindable(wrappedValue: authenticationStore)
     }
     //MARK: Scene
     var body: some Scene {
@@ -42,7 +45,7 @@ struct NetworkAppApp: App {
                     errorView
                 }
             }
-            .environmentObject(errorManager)
+            .environment(errorManager)
         }
     }
     
@@ -59,4 +62,3 @@ struct NetworkAppApp: App {
         }
     }
 }
-

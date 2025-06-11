@@ -11,11 +11,12 @@ enum FavoritesCoordinatorPages: Hashable {
     case details(id: Int)
 }
 
+@Observable
 final class FavoritesCoordinator: Coordinator {
     
-    @Published var path = NavigationPath()
+    var path = NavigationPath()
     
-    let repository: TMDBRepositoryProtocol
+    @ObservationIgnored let repository: TMDBRepositoryProtocol
  
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository

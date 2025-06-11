@@ -7,19 +7,20 @@
 
 import SwiftUI
 
-@MainActor
-final class MovieDetailsViewModel: ObservableObject {
+@Observable
+final class MovieDetailsViewModel {
     
-    @Published var movie: Movie?
+    var movie: Movie?
     
-    private let repository: TMDBRepositoryProtocol
-    private let movieID: Int
+    @ObservationIgnored private let repository: TMDBRepositoryProtocol
+    @ObservationIgnored private let movieID: Int
     
     init(repository: TMDBRepositoryProtocol, movieID: Int) {
         self.repository = repository
         self.movieID = movieID
     }
     
+    @MainActor
     func getMovieDetails() async throws {
         do {
             movie = try await repository.fetchMovie(movieID)

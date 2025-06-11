@@ -7,14 +7,14 @@
 
 import SwiftUI
 
-@MainActor
-final class TrendingMediaViewModel: ObservableObject {
+@Observable
+final class TrendingMediaViewModel {
     
-    @Published var media: [MediaItem] = []
-    @Published var viewState: TrendingMediaViewState = .loading
-    var isLoaded = false
+    var media: [MediaItem] = []
+    var viewState: TrendingMediaViewState = .loading
     
-    let repository: TMDBRepositoryProtocol
+    @ObservationIgnored var isLoaded = false
+    @ObservationIgnored let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
@@ -25,6 +25,7 @@ final class TrendingMediaViewModel: ObservableObject {
         case success
     }
     
+    @MainActor
     func loadMedia() async throws {
         do {
             if media.isEmpty {
@@ -39,6 +40,7 @@ final class TrendingMediaViewModel: ObservableObject {
         }
     }
     
+    @MainActor
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
             updateFavorite(item)

@@ -9,11 +9,11 @@ import SwiftUI
 
 struct LoginView: View {
     
-    @StateObject var viewModel: LoginViewModel
-    @EnvironmentObject var authentication: AuthenticationStore
+    @Bindable var viewModel: LoginViewModel
+    @Environment(AuthenticationStore.self) var authentication
     
     init(repository: TMDBRepositoryProtocol) {
-        _viewModel = StateObject(wrappedValue: LoginViewModel(repository: repository))
+        _viewModel = Bindable(wrappedValue: LoginViewModel(repository: repository))
     }
     
     enum Assets: String {

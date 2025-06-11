@@ -7,10 +7,10 @@
 
 import Foundation
 
-@MainActor
-final class UserViewModel: ObservableObject {
+@Observable
+final class UserViewModel {
     
-    @Published var user: User?
+    var user: User?
     
     var avatarURL: URL? {
         guard let user else { return nil }

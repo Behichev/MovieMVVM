@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DiscoverMovieView: View {
     
-    @StateObject var viewModel: DiscoverMovieViewModel
+    @State var viewModel: DiscoverMovieViewModel
     let onMediaTapped: (Int) -> Void
     
     var body: some View {
@@ -19,12 +19,7 @@ struct DiscoverMovieView: View {
                 ProgressView()
             case .success:
                 if viewModel.movies.isEmpty {
-                    VStack {
-                        Image(systemName: "movieclapper")
-                            .font(.largeTitle)
-                            .foregroundStyle(.primary)
-                        Text("Movies is empty")
-                    }
+                    emptyView
                 } else {
                     mainContent
                         .padding()
@@ -45,6 +40,17 @@ struct DiscoverMovieView: View {
 //MARK: UI Components
 
 private extension DiscoverMovieView {
+    
+    var emptyView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "movieclapper")
+                .font(.largeTitle)
+                .foregroundStyle(.primary)
+            Text("Movies is empty")
+        }
+    }
+    
+    
     var mainContent: some View {
         LazyVStack {
             ForEach(viewModel.movies, id: \.id) { movie in

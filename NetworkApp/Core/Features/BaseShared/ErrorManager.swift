@@ -7,14 +7,15 @@
 
 import Foundation
 
-@MainActor
-final class ErrorManager: ObservableObject {
+@Observable
+final class ErrorManager {
     
-    @Published var currentError: String? = nil
-    @Published var showError: Bool = false
+    var currentError: String? = nil
+    var showError: Bool = false
     
     private var hideTimer: Timer?
     
+    @MainActor
     func showError(_ message: String, autohide: Bool = true) {
         currentError = message
         showError = true
@@ -28,6 +29,7 @@ final class ErrorManager: ObservableObject {
         }
     }
     
+    @MainActor
     func hideError() {
         hideTimer?.invalidate()
         currentError = nil

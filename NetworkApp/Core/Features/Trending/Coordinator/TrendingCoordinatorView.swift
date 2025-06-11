@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TrendingCoordinatorView: View {
     
-    @ObservedObject var coordinator: TrendingCoordinator
+    @Bindable var coordinator: TrendingCoordinator
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {

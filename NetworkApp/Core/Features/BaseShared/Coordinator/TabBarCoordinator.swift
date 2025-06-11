@@ -13,14 +13,14 @@ enum TabBarItem {
     case favorite
     case userProfile
 }
-
-final class TabBarCoordinator: ObservableObject {
+@Observable
+final class TabBarCoordinator {
     
-    @Published var selectedTab: TabBarItem = .trending
+     var selectedTab: TabBarItem = .trending
     
-     var trendingCoordinator: TrendingCoordinator?
-     var discoverCoordinator: DiscoverCoordinator?
-     var favoritesCoordinator: FavoritesCoordinator?
+    var trendingCoordinator: TrendingCoordinator?
+      var discoverCoordinator: DiscoverCoordinator?
+      var favoritesCoordinator: FavoritesCoordinator?
     
     let repository: TMDBRepositoryProtocol
     
@@ -30,7 +30,7 @@ final class TabBarCoordinator: ObservableObject {
     }
     
     var rootView: some View {
-        TabBarView(tabBarCoordinator: self)
+        TabBarView(repository: repository, tabBarCoordinator: self)
     }
     
     func selectTab(tab: TabBarItem) {
@@ -65,7 +65,7 @@ final class TabBarCoordinator: ObservableObject {
         if favoritesCoordinator == nil {
             favoritesCoordinator = FavoritesCoordinator(repository: repository)
         }
-        return FavoritesCoordinatorView(coordinator: favoritesCoordinator!)
+        return FavoritesRootView(coordinator: favoritesCoordinator!)
     }
     
     @MainActor

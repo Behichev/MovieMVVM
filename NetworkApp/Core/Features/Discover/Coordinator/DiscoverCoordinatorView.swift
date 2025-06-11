@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DiscoverCoordinatorView: View {
     
-    @ObservedObject var coordinator: DiscoverCoordinator
+    @Bindable var coordinator: DiscoverCoordinator
     
     var body: some View {
         NavigationStack(path: $coordinator.path) {

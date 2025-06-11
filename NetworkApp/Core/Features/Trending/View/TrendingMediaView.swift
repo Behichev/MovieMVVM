@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TrendingMediaView: View {
     
-    @StateObject var viewModel: TrendingMediaViewModel
+    @State var viewModel: TrendingMediaViewModel
     let onMediaTapped: (Int) -> Void
     
     var body: some View {

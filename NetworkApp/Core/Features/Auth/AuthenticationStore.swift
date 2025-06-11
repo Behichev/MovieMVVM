@@ -7,18 +7,16 @@
 
 import Foundation
 
-@MainActor
-final class AuthenticationStore: ObservableObject {
+@Observable
+final class AuthenticationStore {
     
-    @Published var isAuthenticated: Bool
+    var isAuthenticated: Bool
     
-    private let repository: TMDBRepositoryProtocol
-    private let keychainService: SecureStorable
-    
-    private var validationTask: Task<Void, Never>? = nil
-    
-    private var sessionID: String
-    private var userID: Int
+    @ObservationIgnored private let repository: TMDBRepositoryProtocol
+    @ObservationIgnored private let keychainService: SecureStorable
+    @ObservationIgnored private var validationTask: Task<Void, Never>? = nil
+    @ObservationIgnored private var sessionID: String
+    @ObservationIgnored private var userID: Int
     
     init(repository: TMDBRepositoryProtocol, keychainService: SecureStorable) {
         self.repository = repository
@@ -34,9 +32,13 @@ final class AuthenticationStore: ObservableObject {
         do {
             updateKeys()
             let _ = try await repository.fetchUser(with: Constants.APIKeys.key)
-            isAuthenticated = true
+            await MainActor.run {
+                isAuthenticated = true
+            }
         } catch {
-            isAuthenticated = false
+            await MainActor.run {
+                isAuthenticated = false
+            }
         }
     }
     
@@ -45,9 +47,13 @@ final class AuthenticationStore: ObservableObject {
             try await repository.deleteSession(Constants.APIKeys.token, sessionID)
             keychainService.delete(forKey: Constants.KeychainKeys.userID.rawValue)
             keychainService.delete(forKey: Constants.KeychainKeys.session.rawValue)
-            isAuthenticated = false
+            await MainActor.run {
+                isAuthenticated = false
+            }
         } catch {
-            isAuthenticated = true
+            await MainActor.run {
+                isAuthenticated = true
+            }
         }
     }
     

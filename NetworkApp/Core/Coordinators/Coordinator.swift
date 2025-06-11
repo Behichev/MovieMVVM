@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-protocol Coordinator: ObservableObject {
+
+protocol Coordinator {
     associatedtype Content: View
     @MainActor @ViewBuilder var rootView: Content { get }
     func closeAllChild()

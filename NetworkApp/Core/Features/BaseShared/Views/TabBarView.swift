@@ -9,7 +9,21 @@ import SwiftUI
 
 struct TabBarView: View {
 
-    @ObservedObject var tabBarCoordinator: TabBarCoordinator
+    @Bindable var tabBarCoordinator: TabBarCoordinator
+    
+    @Bindable var trendingCoordinator: TrendingCoordinator
+    @Bindable var discoverCoordinator: DiscoverCoordinator
+    @Bindable var favoritesCoordinator: FavoritesCoordinator
+    
+    let repository: TMDBRepositoryProtocol
+    
+    init(repository: TMDBRepositoryProtocol, tabBarCoordinator: TabBarCoordinator) {
+        self.repository = repository
+        self.tabBarCoordinator = tabBarCoordinator
+        self.trendingCoordinator = TrendingCoordinator(repository: repository)
+        self.discoverCoordinator = DiscoverCoordinator(repository: repository)
+        self.favoritesCoordinator = FavoritesCoordinator(repository: repository)
+    }
     
     enum Assets: String {
         case trendingImageName = "chart.line.uptrend.xyaxis.circle.fill"
@@ -44,6 +58,11 @@ struct TabBarView: View {
                     Label("Profile", systemImage: Assets.userImageName.rawValue)
                 }
                 .tag(TabBarItem.userProfile)
+        }
+        .onAppear {
+            tabBarCoordinator.trendingCoordinator = trendingCoordinator
+            tabBarCoordinator.discoverCoordinator = discoverCoordinator
+            tabBarCoordinator.favoritesCoordinator = favoritesCoordinator
         }
     }
 }
