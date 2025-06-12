@@ -10,7 +10,7 @@ import SwiftUI
 struct UserView: View {
     
     @Environment(AuthenticationStore.self) var authentication
-    @Bindable var viewModel: UserViewModel
+    @State var viewModel: UserViewModel
  
     var body: some View {
         VStack(spacing: Constants.Design.LayoutConstants.defaultSpacing.rawValue) {

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DiscoverMovieView: View {
     
-    @State var viewModel: DiscoverMovieViewModel
+    @Bindable var viewModel: DiscoverMovieViewModel
     let onMediaTapped: (Int) -> Void
     
     var body: some View {
@@ -58,7 +58,9 @@ private extension DiscoverMovieView {
                     MediaPreviewCell(media: movie) { path in
                         try? await viewModel.setImage(path)
                     } onFavoritesTapped: {
-                        print("Add to favorites")
+                        Task {
+                            try? await viewModel.favoritesToggle(movie)
+                        }
                     }
                     .onTapGesture {
                         onMediaTapped(movie.id)
@@ -76,4 +78,3 @@ private extension DiscoverMovieView {
         }
     }
 }
-

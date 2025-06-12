@@ -32,6 +32,16 @@ struct MovieDetailsView: View {
             Text("Budget: \(viewModel.movie?.budget ?? 0)")
         }
         .padding()
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: {
+                    print("Кнопка натиснута")
+                }) {
+                    Image(systemName: "star")
+                }
+            }
+        }
+        
         .task {
             try? await viewModel.getMovieDetails()
             if let imagePath = viewModel.movie?.posterPath {

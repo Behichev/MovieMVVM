@@ -16,14 +16,15 @@ final class DiscoverCoordinator: Coordinator {
     
     var path = NavigationPath()
     
-   @ObservationIgnored let repository: TMDBRepositoryProtocol
+    @ObservationIgnored let repository: TMDBRepositoryProtocol
+    @ObservationIgnored var viewModel: DiscoverMovieViewModel
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
+        self.viewModel = DiscoverMovieViewModel(repository: repository)
     }
     
     var rootView: some View  {
-        let viewModel = DiscoverMovieViewModel(repository: repository)
         DiscoverMovieView(viewModel: viewModel, onMediaTapped: { id in
             self.push(.details(id: id))
         })

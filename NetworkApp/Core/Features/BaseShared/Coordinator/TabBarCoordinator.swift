@@ -16,13 +16,13 @@ enum TabBarItem {
 @Observable
 final class TabBarCoordinator {
     
-     var selectedTab: TabBarItem = .trending
+    var selectedTab: TabBarItem = .trending
     
-    var trendingCoordinator: TrendingCoordinator?
-      var discoverCoordinator: DiscoverCoordinator?
-      var favoritesCoordinator: FavoritesCoordinator?
+    @ObservationIgnored var trendingCoordinator: TrendingCoordinator?
+    @ObservationIgnored var discoverCoordinator: DiscoverCoordinator?
+    @ObservationIgnored var favoritesCoordinator: FavoritesCoordinator?
     
-    let repository: TMDBRepositoryProtocol
+    @ObservationIgnored let repository: TMDBRepositoryProtocol
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository

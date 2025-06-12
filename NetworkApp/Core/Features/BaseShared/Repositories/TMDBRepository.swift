@@ -170,12 +170,18 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         }
     }
     
-    func favoritesToggle(_ item: MediaItem) async throws {
+    func favoritesToggle(_ item: MediaItem, mediaType: MediaType) async throws {
+        var addItem = item
+        if mediaType == .movie {
+            addItem.mediaType = .movie
+        } else {
+            addItem.mediaType = .tv
+        }
         do {
-            if item.isInFavorites ?? false {
-                try await deleteMovieFromFavorites(item)
+            if addItem.isInFavorites ?? false {
+                try await deleteMovieFromFavorites(addItem)
             } else {
-                try await addMovieToFavorite(item)
+                try await addMovieToFavorite(addItem)
             }
         } catch {
             await errorManager.showError("\(error.localizedDescription)")
@@ -184,11 +190,19 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     
     func fetchMovieList(page: Int) async throws -> [MediaItem] {
         do {
+            let favoriteMedia = try await fetchFavoritesMovies()
             
             let strPage = "\(page)"
-            let result: MediaResult = try await networkService.performRequest(from: MediaEndpoint.moviesList(page: strPage))
+            let response: MediaResult = try await networkService.performRequest(from: MediaEndpoint.moviesList(page: strPage))
+            var results = response.results
             
-            return result.results
+            for item in favoriteMedia {
+                if let index = results.firstIndex(where: {$0.id == item.id }) {
+                    results[index].isInFavorites = true
+                }
+            }
+            
+            return results
         } catch {
             await errorManager.showError("\(error.localizedDescription)")
             return dataSource.getMoviesList()

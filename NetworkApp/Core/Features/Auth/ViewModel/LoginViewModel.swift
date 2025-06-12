@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-final class LoginViewModel: ObservableObject {
+final class LoginViewModel {
     
     var credentials = Credentials()
     var authState: AuthViewState = .login

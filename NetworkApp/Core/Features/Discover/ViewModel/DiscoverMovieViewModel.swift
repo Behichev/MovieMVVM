@@ -19,6 +19,7 @@ final class DiscoverMovieViewModel {
     @ObservationIgnored private var currentPage = 1
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
+    @ObservationIgnored let mediaType: MediaType = .movie
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
@@ -64,6 +65,17 @@ final class DiscoverMovieViewModel {
         }
     }
     
+    @MainActor
+    func favoritesToggle(_ item: MediaItem) async throws {
+        do {
+            updateFavorite(item)
+            try await repository.favoritesToggle(item, mediaType: mediaType)
+        } catch {
+            updateFavorite(item)
+            throw error
+        }
+    }
+    
     func hasReachedEnd(of item: MediaItem) -> Bool {
         movies.last?.id == item.id
     }
@@ -75,6 +87,12 @@ final class DiscoverMovieViewModel {
             return image
         } catch {
             throw error
+        }
+    }
+    
+    private func updateFavorite(_ item: MediaItem) {
+        if let index = movies.firstIndex(where: { $0.id == item.id }) {
+            movies[index].isInFavorites = item.isInFavorites ?? false ? false : true
         }
     }
 }

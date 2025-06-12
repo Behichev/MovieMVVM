@@ -17,13 +17,14 @@ final class FavoritesCoordinator: Coordinator {
     var path = NavigationPath()
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
+    @ObservationIgnored var viewModel: FavoritesViewModel
  
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
+        self.viewModel = FavoritesViewModel(repository: repository)
     }
     
     var rootView: some View  {
-        let viewModel = FavoritesViewModel(repository: repository)
         FavoritesMoviesView(viewModel: viewModel, onMediaTapped: { id in
             self.push(.details(id: id))
         })

@@ -44,7 +44,7 @@ final class TrendingMediaViewModel {
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
             updateFavorite(item)
-            try await repository.favoritesToggle(item)
+            try await repository.favoritesToggle(item, mediaType: .movie)
         } catch {
             updateFavorite(item)
             throw error

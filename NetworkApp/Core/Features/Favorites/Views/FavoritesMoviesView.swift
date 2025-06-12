@@ -9,7 +9,7 @@ import SwiftUI
 
 struct FavoritesMoviesView: View {
     
-    @State var viewModel: FavoritesViewModel
+    @Bindable var viewModel: FavoritesViewModel
     let onMediaTapped: (Int) -> Void
     
     var body: some View {
