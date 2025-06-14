@@ -9,7 +9,7 @@ import SwiftUI
 
 struct TrendingMediaView: View {
     
-    @Bindable var viewModel: TrendingMediaViewModel
+    @State var viewModel: TrendingMediaViewModel
     let onMediaTapped: (Int) -> Void
     
     var body: some View {
@@ -61,4 +61,10 @@ private extension TrendingMediaView {
             }
         }
     }
+}
+
+#Preview {
+    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage(), errorManager: ErrorManager())
+    let vm = TrendingMediaViewModel(repository: repository)
+    TrendingMediaView(viewModel: vm, onMediaTapped: { _ in print("sdsd") })
 }

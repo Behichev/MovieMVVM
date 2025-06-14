@@ -17,14 +17,13 @@ final class TrendingCoordinator: Coordinator {
     var path = NavigationPath()
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
-    @ObservationIgnored var viewModel: TrendingMediaViewModel
     
     init(repository: TMDBRepositoryProtocol) {
         self.repository = repository
-        self.viewModel = TrendingMediaViewModel(repository: repository)
     }
     
     var rootView: some View  {
+        let viewModel = TrendingMediaViewModel(repository: repository)
         TrendingMediaView(viewModel: viewModel, onMediaTapped: { id in
             self.push(.details(id: id))
         })

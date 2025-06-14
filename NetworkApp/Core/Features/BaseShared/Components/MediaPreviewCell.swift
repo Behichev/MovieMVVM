@@ -15,18 +15,17 @@ struct MediaPreviewCell: View {
     @State private var image: UIImage?
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .center) {
-                if let image = image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 110)
-                        .cornerRadius(Constants.Design.LayoutConstants.cornerRadius.rawValue)
-                } else {
-                    skeletonImageView
-                }
-                
+        HStack(alignment: .top) {
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 128)
+                    .cornerRadius(Constants.Design.LayoutConstants.cornerRadius.rawValue)
+            } else {
+                skeletonImageView
+            }
+            VStack(spacing: 32) {
                 VStack(spacing: 8) {
                     HStack {
                         Text(media.name ?? media.title ?? "No title")
@@ -42,7 +41,6 @@ struct MediaPreviewCell: View {
                             Image(systemName: media.isInFavorites ?? false ? "star.fill" : "star")
                         }
                     }
-                    .foregroundStyle(.primary)
                     
                     HStack() {
                         Image(systemName: "calendar")
@@ -51,23 +49,16 @@ struct MediaPreviewCell: View {
                             .font(.footnote)
                         Spacer()
                     }
-                    .foregroundStyle(.secondary)
-                    
-                    Spacer()
-                    
-                    Text(media.overview)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(3)
-                    
-                    Spacer()
                 }
-                
-                Spacer()
-                
-                
-                
+                Text(media.overview)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit(3)
             }
         }
+        .background(.clear)
+        
+        
+        
         .task {
             if image == nil {
                 image = await loadPoster(media.posterPath ?? "")
@@ -84,4 +75,13 @@ struct MediaPreviewCell: View {
                 .tint(.yellow)
         }
     }
+}
+
+#Preview(traits: .sizeThatFitsLayout) {
+    MediaPreviewCell(media: MockHelper.mockMediaItem) { _ in
+        await MockHelper.setImage("")
+    } onFavoritesTapped: {
+        print("favorite")
+    }
+    .padding()
 }
