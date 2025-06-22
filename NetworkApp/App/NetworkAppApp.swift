@@ -16,7 +16,7 @@ struct NetworkAppApp: App {
     private var networkService: NetworkServiceProtocol = NetworkService()
     private var imageService: ImageLoaderService = TMDBImageLoader()
     private var keychainService = KeychainService()
-    private var moviesStorage = MoviesStorage()
+    @Bindable private var moviesStorage = MoviesStorage()
     //MARK: Repositories
     private var repository: TMDBRepositoryProtocol
     //MARK: Init
@@ -27,7 +27,6 @@ struct NetworkAppApp: App {
             networkService: networkService,
             imageService: imageService,
             keychainService: keychainService,
-            dataSource: moviesStorage,
             errorManager: errorManager
         )
         let authenticationStore = AuthenticationStore(repository: repository,
@@ -39,7 +38,7 @@ struct NetworkAppApp: App {
         WindowGroup {
             ZStack {
                 Group {
-                    RootView(authStore: authenticationStore, repository: repository)
+                    RootView(authStore: authenticationStore, repository: repository, mediaStorage: moviesStorage)
                 }
                 if errorManager.showError {
                     errorView

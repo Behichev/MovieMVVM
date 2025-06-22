@@ -10,14 +10,15 @@ import SwiftUI
 @Observable
 final class FavoritesViewModel {
     
-    var favoritesMedia: [MediaItem] = []
     var viewState: TrendingViewState = .loading
+    var mediaStorage: MoviesStorage
     
     @ObservationIgnored var isLoaded = false
     @ObservationIgnored let repository: TMDBRepositoryProtocol
     
-    init(repository: TMDBRepositoryProtocol) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
         self.repository = repository
+        self.mediaStorage = mediaStorage
     }
     
     enum TrendingViewState {
@@ -27,13 +28,24 @@ final class FavoritesViewModel {
     
     @MainActor
     func fetchFavorites() async throws {
-        if favoritesMedia.isEmpty {
-            viewState = .loading
-        }
+        viewState = .loading
+        
         do {
-            favoritesMedia = try await repository.fetchFavoritesMovies()
-            viewState = .success
-            isLoaded = true
+            if mediaStorage.favoritesMovies.isEmpty {
+                mediaStorage.favoritesMovies = try await repository.fetchFavoritesMovies()
+                viewState = .success
+                isLoaded = true
+            } else {
+                let favoritesMovies = try await repository.fetchFavoritesMovies()
+                if mediaStorage.favoritesMovies != favoritesMovies {
+                    mediaStorage.favoritesMovies = favoritesMovies
+                    viewState = .success
+                    isLoaded = true
+                } else {
+                    viewState = .success
+                    isLoaded = true
+                }
+            }
         } catch {
             throw error
         }
@@ -42,13 +54,10 @@ final class FavoritesViewModel {
     @MainActor
     func removeFromFavorites(_ item: MediaItem) async throws {
         do {
-            if let index = favoritesMedia.firstIndex(where: {$0.id == item.id }) {
-                withAnimation {
-                    favoritesMedia.remove(at: index)
-                }
+            withAnimation {
+                mediaStorage.removeFromFavorites(item)
             }
-            try? await repository.deleteMovieFromFavorites(item)
-            viewState = .success
+            try? await repository.deleteMediaFromFavorites(item)
         }
     }
     

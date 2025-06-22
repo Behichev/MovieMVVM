@@ -26,12 +26,12 @@ struct TrendingMediaView: View {
         .navigationTitle("Trending")
         .refreshable {
             Task {
-                try? await viewModel.loadMedia()
+                try? await viewModel.loadTrendingMedia()
             }
         }
         .task {
             if !viewModel.isLoaded {
-                try? await viewModel.loadMedia()
+                try? await viewModel.loadTrendingMedia()
             }
         }
     }
@@ -43,12 +43,11 @@ private extension TrendingMediaView {
     var mainContent: some View {
         LazyVStack {
             cells
-                .buttonStyle(.plain)
         }
     }
     
     var cells: some View {
-        ForEach(viewModel.media, id: \.id) { media in
+        ForEach(viewModel.mediaStorage.trendingMovies, id: \.id) { media in
             MediaPreviewCell(media: media) { url in
                 try? await viewModel.setImage(url)
             } onFavoritesTapped: {
@@ -64,7 +63,7 @@ private extension TrendingMediaView {
 }
 
 #Preview {
-    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), dataSource: MoviesStorage(), errorManager: ErrorManager())
-    let vm = TrendingMediaViewModel(repository: repository)
+    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), errorManager: ErrorManager())
+    let vm = TrendingMediaViewModel(repository: repository, mediaStorage: MoviesStorage())
     TrendingMediaView(viewModel: vm, onMediaTapped: { _ in print("sdsd") })
 }

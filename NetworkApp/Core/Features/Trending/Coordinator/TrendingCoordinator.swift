@@ -17,13 +17,14 @@ final class TrendingCoordinator: Coordinator {
     var path = NavigationPath()
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
-    
-    init(repository: TMDBRepositoryProtocol) {
+    var mediaStorage: MoviesStorageProtocol
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorageProtocol) {
         self.repository = repository
+        self.mediaStorage = mediaStorage
     }
     
     var rootView: some View  {
-        let viewModel = TrendingMediaViewModel(repository: repository)
+        let viewModel = TrendingMediaViewModel(repository: repository, mediaStorage: mediaStorage)
         TrendingMediaView(viewModel: viewModel, onMediaTapped: { id in
             self.push(.details(id: id))
         })
@@ -49,7 +50,7 @@ final class TrendingCoordinator: Coordinator {
     func build(_ page: TrendingCoordinatorPages) -> some View {
         switch page {
         case .details(let id):
-            MovieDetailsView(repository: repository, movieID: id)
+            MovieDetailsView(repository: repository, movieStorage: mediaStorage, movieID: id)
         }
     }
 }

@@ -10,14 +10,15 @@ import SwiftUI
 @Observable
 final class TrendingMediaViewModel {
     
-    var media: [MediaItem] = []
     var viewState: TrendingMediaViewState = .loading
+    var mediaStorage: MoviesStorageProtocol
     
     @ObservationIgnored var isLoaded = false
     @ObservationIgnored let repository: TMDBRepositoryProtocol
     
-    init(repository: TMDBRepositoryProtocol) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorageProtocol) {
         self.repository = repository
+        self.mediaStorage = mediaStorage
     }
     
     enum TrendingMediaViewState {
@@ -26,27 +27,50 @@ final class TrendingMediaViewModel {
     }
     
     @MainActor
-    func loadMedia() async throws {
+    func loadTrendingMedia() async throws {
+        viewState = .loading
         do {
-            if media.isEmpty {
-                viewState = .loading
+            if mediaStorage.trendingMovies.isEmpty {
+                mediaStorage.trendingMovies = try await repository.fetchTrendingMedia()
+                mediaStorage.favoritesMovies = try await repository.fetchFavoritesMovies()
+                
+                for item in mediaStorage.favoritesMovies {
+                    updateFavorite(item)
+                }
+                
+                isLoaded = true
+                viewState = .success
+            } else {
+                var trendingMovies = try await repository.fetchTrendingMedia()
+                let favoritesMovies = mediaStorage.favoritesMovies
+                
+                for item in favoritesMovies {
+                    if let index = trendingMovies.firstIndex(where: { $0.id == item.id }) {
+                        trendingMovies[index].isInFavorites = item.isInFavorites ?? false
+                    }
+                }
+                
+                if trendingMovies != mediaStorage.trendingMovies {
+                    mediaStorage.trendingMovies = trendingMovies
+                    isLoaded = true
+                    viewState = .success
+                } else {
+                    isLoaded = true
+                    viewState = .success
+                }
             }
-            
-            media = try await repository.fetchTrendingMedia()
-            viewState = .success
-            isLoaded = true
         } catch {
-            print("\(error)")
+            viewState = .success
         }
     }
     
     @MainActor
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
-            updateFavorite(item)
+            mediaStorage.favoritesToggle(item)
             try await repository.favoritesToggle(item, mediaType: .movie)
         } catch {
-            updateFavorite(item)
+            mediaStorage.favoritesToggle(item)
             throw error
         }
     }
@@ -62,8 +86,8 @@ final class TrendingMediaViewModel {
     }
     
     private func updateFavorite(_ item: MediaItem) {
-        if let index = media.firstIndex(where: { $0.id == item.id }) {
-            media[index].isInFavorites = item.isInFavorites ?? false ? false : true
+        if let index = mediaStorage.trendingMovies.firstIndex(where: { $0.id == item.id }) {
+            mediaStorage.trendingMovies[index].isInFavorites = item.isInFavorites ?? false
         }
     }
 }

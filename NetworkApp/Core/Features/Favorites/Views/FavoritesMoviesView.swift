@@ -19,7 +19,7 @@ struct FavoritesMoviesView: View {
                 ProgressView()
                     .tint(.accentColor)
             case .success:
-                if viewModel.favoritesMedia.isEmpty {
+                if viewModel.mediaStorage.favoritesMovies.isEmpty {
                     emptyView
                 } else {
                     mainContent
@@ -61,7 +61,7 @@ private extension FavoritesMoviesView {
     }
     
     var cells: some View {
-        ForEach(viewModel.favoritesMedia, id: \.id) { media in
+        ForEach(viewModel.mediaStorage.favoritesMovies, id: \.id) { media in
             createCell(with: media)
                 .onTapGesture {
                     onMediaTapped(media.id)

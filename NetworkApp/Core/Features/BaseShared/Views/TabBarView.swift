@@ -17,12 +17,12 @@ struct TabBarView: View {
     
     let repository: TMDBRepositoryProtocol
     
-    init(repository: TMDBRepositoryProtocol, tabBarCoordinator: TabBarCoordinator) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage, tabBarCoordinator: TabBarCoordinator) {
         self.repository = repository
         self.tabBarCoordinator = tabBarCoordinator
-        self.trendingCoordinator = TrendingCoordinator(repository: repository)
-        self.discoverCoordinator = DiscoverCoordinator(repository: repository)
-        self.favoritesCoordinator = FavoritesCoordinator(repository: repository)
+        self.trendingCoordinator = TrendingCoordinator(repository: repository, mediaStorage: mediaStorage)
+        self.discoverCoordinator = DiscoverCoordinator(repository: repository, moviesStorage: mediaStorage)
+        self.favoritesCoordinator = FavoritesCoordinator(repository: repository, mediaStorage: mediaStorage)
     }
     
     enum Assets: String {

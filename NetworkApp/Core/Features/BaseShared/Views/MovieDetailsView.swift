@@ -12,8 +12,8 @@ struct MovieDetailsView: View {
     @Bindable private var viewModel: MovieDetailsViewModel
     @State private var image: UIImage?
     
-    init(repository: TMDBRepositoryProtocol, movieID: Int) {
-        _viewModel = Bindable(wrappedValue: MovieDetailsViewModel(repository: repository, movieID: movieID))
+    init(repository: TMDBRepositoryProtocol, movieStorage: MoviesStorageProtocol, movieID: Int) {
+        _viewModel = Bindable(wrappedValue: MovieDetailsViewModel(repository: repository, moviesStorage: movieStorage, movieID: movieID))
     }
     
     var body: some View {
@@ -34,11 +34,7 @@ struct MovieDetailsView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: {
-                    print("Кнопка натиснута")
-                }) {
-                    Image(systemName: "star")
-                }
+                favoriteButton
             }
         }
         
@@ -51,7 +47,19 @@ struct MovieDetailsView: View {
     }
 }
 
+private extension MovieDetailsView {
+    var favoriteButton: some View {
+            Button {
+                Task {
+                  try? await viewModel.toggleFavorite()
+                }
+            } label: {
+                Image(systemName: viewModel.movie?.isInFavorite ?? false ? "star.fill" : "star")
+            }
+    }
+}
+
 #Preview {
-    let repo = TMDBRepository(networkService: NetworkService(),imageService: TMDBImageLoader(), keychainService: KeychainService(),dataSource: MoviesStorage(), errorManager: ErrorManager())
-    MovieDetailsView(repository: repo, movieID: 12)
+    let repo = TMDBRepository(networkService: NetworkService(),imageService: TMDBImageLoader(), keychainService: KeychainService(), errorManager: ErrorManager())
+    MovieDetailsView(repository: repo, movieStorage: MoviesStorage(), movieID: 12)
 }

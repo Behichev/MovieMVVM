@@ -15,13 +15,14 @@ enum DiscoverCoordinatorPages: Hashable {
 final class DiscoverCoordinator: Coordinator {
     
     var path = NavigationPath()
-    
+    var moviesStorage: MoviesStorageProtocol
     @ObservationIgnored let repository: TMDBRepositoryProtocol
     @ObservationIgnored var viewModel: DiscoverMovieViewModel
     
-    init(repository: TMDBRepositoryProtocol) {
+    init(repository: TMDBRepositoryProtocol, moviesStorage: MoviesStorageProtocol) {
         self.repository = repository
-        self.viewModel = DiscoverMovieViewModel(repository: repository)
+        self.moviesStorage = moviesStorage
+        self.viewModel = DiscoverMovieViewModel(repository: repository, movieStorage: moviesStorage)
     }
     
     var rootView: some View  {
@@ -50,7 +51,7 @@ final class DiscoverCoordinator: Coordinator {
     func build(_ page: DiscoverCoordinatorPages) -> some View {
         switch page {
         case .details(let id):
-            MovieDetailsView(repository: repository, movieID: id)
+            MovieDetailsView(repository: repository, movieStorage: moviesStorage, movieID: id)
         }
     }
 }

@@ -18,10 +18,12 @@ final class FavoritesCoordinator: Coordinator {
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
     @ObservationIgnored var viewModel: FavoritesViewModel
+    private var mediaStorage: MoviesStorageProtocol
  
-    init(repository: TMDBRepositoryProtocol) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
         self.repository = repository
-        self.viewModel = FavoritesViewModel(repository: repository)
+        self.mediaStorage = mediaStorage
+        self.viewModel = FavoritesViewModel(repository: repository, mediaStorage: mediaStorage)
     }
     
     var rootView: some View  {
@@ -50,7 +52,7 @@ final class FavoritesCoordinator: Coordinator {
     func build(_ page: FavoritesCoordinatorPages) -> some View {
         switch page {
         case .details(let id):
-            MovieDetailsView(repository: repository, movieID: id)
+            MovieDetailsView(repository: repository, movieStorage: mediaStorage, movieID: id)
         }
     }
 }

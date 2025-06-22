@@ -11,8 +11,8 @@ struct RootView: View {
     
     @Bindable private var rootCoordinator: RootCoordinator
     
-    init(authStore: AuthenticationStore, repository: TMDBRepositoryProtocol) {
-        self._rootCoordinator = Bindable(wrappedValue: RootCoordinator(authStore: authStore, repository: repository))
+    init(authStore: AuthenticationStore, repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
+        self._rootCoordinator = Bindable(wrappedValue: RootCoordinator(authStore: authStore, repository: repository, mediaStorage: mediaStorage))
     }
     
     var body: some View {

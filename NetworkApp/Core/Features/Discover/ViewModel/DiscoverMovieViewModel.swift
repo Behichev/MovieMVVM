@@ -10,7 +10,7 @@ import SwiftUI
 @Observable
 final class DiscoverMovieViewModel {
     
-    var movies: [MediaItem] = []
+    var movieStorage: MoviesStorageProtocol
     var viewState: DiscoverViewState = .loading
     
     @ObservationIgnored var isHasLoaded = false
@@ -21,8 +21,9 @@ final class DiscoverMovieViewModel {
     @ObservationIgnored let repository: TMDBRepositoryProtocol
     @ObservationIgnored let mediaType: MediaType = .movie
     
-    init(repository: TMDBRepositoryProtocol) {
+    init(repository: TMDBRepositoryProtocol, movieStorage: MoviesStorageProtocol) {
         self.repository = repository
+        self.movieStorage = movieStorage
     }
     
     enum DiscoverViewState {
@@ -32,11 +33,14 @@ final class DiscoverMovieViewModel {
     
     @MainActor
     func loadMovies() async throws {
-        if movies.isEmpty {
+        if movieStorage.moviesList.isEmpty {
             viewState = .loading
         }
         do {
-            movies = try await repository.fetchMovieList(page: currentPage)
+            movieStorage.moviesList = try await repository.fetchMovieList(page: currentPage)
+            for item in movieStorage.favoritesMovies {
+                updateFavorite(item)
+            }
             isHasLoaded = true
             viewState = .success
         } catch {
@@ -56,10 +60,13 @@ final class DiscoverMovieViewModel {
         do {
             let newMovies = try await repository.fetchMovieList(page: currentPage)
             
-            let existingIDs = Set(movies.map { $0.id })
+            let existingIDs = Set(movieStorage.moviesList.map { $0.id })
             let uniqueMovies = newMovies.filter { !existingIDs.contains($0.id) }
             
-            movies += uniqueMovies
+            movieStorage.moviesList += uniqueMovies
+            for item in movieStorage.favoritesMovies {
+                updateFavorite(item)
+            }
         } catch {
             throw error
         }
@@ -68,7 +75,7 @@ final class DiscoverMovieViewModel {
     @MainActor
     func favoritesToggle(_ item: MediaItem) async throws {
         do {
-            updateFavorite(item)
+            movieStorage.favoritesToggle(item)
             try await repository.favoritesToggle(item, mediaType: mediaType)
         } catch {
             updateFavorite(item)
@@ -77,7 +84,7 @@ final class DiscoverMovieViewModel {
     }
     
     func hasReachedEnd(of item: MediaItem) -> Bool {
-        movies.last?.id == item.id
+        movieStorage.moviesList.last?.id == item.id
     }
     
     func setImage(_ path: String) async throws -> UIImage? {
@@ -91,8 +98,8 @@ final class DiscoverMovieViewModel {
     }
     
     private func updateFavorite(_ item: MediaItem) {
-        if let index = movies.firstIndex(where: { $0.id == item.id }) {
-            movies[index].isInFavorites = item.isInFavorites ?? false ? false : true
+        if let index = movieStorage.moviesList.firstIndex(where: { $0.id == item.id }) {
+            movieStorage.moviesList[index].isInFavorites = item.isInFavorites ?? false
         }
     }
 }

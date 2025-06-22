@@ -21,8 +21,8 @@ enum MediaEndpoint: Endpoint {
     
     case trending(mediaItem: MediaType, timeWindow: TimeWindow.RawValue)
     case favoriteMovies(accountId: String)
-    case addToFavorites(accountId: String, item: MediaItem)
-    case removeFromFavorites(accountId: String, item: MediaItem)
+    case addToFavorites(accountId: String, itemID: Int, itemType: String)
+    case removeFromFavorites(accountId: String, itemID: Int, mediaType: String)
     case moviesList(page: String)
     case movieDetails(movieID: String)
     
@@ -32,7 +32,7 @@ enum MediaEndpoint: Endpoint {
             return "/3/trending/\(mediaItem.rawValue)/\(timeWindow)"
         case .favoriteMovies(let accountId):
             return "/3/account/\(accountId)/favorite/movies"
-        case .addToFavorites(let accountId, _), .removeFromFavorites(let accountId, _):
+        case .addToFavorites(let accountId, _, _), .removeFromFavorites(let accountId, _, _):
             return "/3/account/\(accountId)/favorite"
         case .moviesList(_):
             return "/3/discover/movie"
@@ -43,7 +43,7 @@ enum MediaEndpoint: Endpoint {
     
     var headers: [String : String]? {
         switch self {
-        case .trending(_,_), .favoriteMovies(_), .addToFavorites(_, _), .removeFromFavorites(_, _), .moviesList(_), .movieDetails(_):
+        case .trending(_,_), .favoriteMovies(_), .addToFavorites(_, _, _), .removeFromFavorites(_, _, _), .moviesList(_), .movieDetails(_):
             [
                 "accept": "application/json",
                 "content-type": "application/json",
@@ -56,16 +56,16 @@ enum MediaEndpoint: Endpoint {
         switch self {
         case .trending(_, _), .favoriteMovies(_):
             return nil
-        case .addToFavorites(_, let mediaItem):
+        case .addToFavorites(_, let mediaID, let mediaType):
             return [
-                "media_type": mediaItem.mediaType?.rawValue,
-                "media_id": mediaItem.id,
+                "media_type": mediaType,
+                "media_id": mediaID,
                 "favorite": true
             ]
-        case .removeFromFavorites(_, let mediaItem):
+        case .removeFromFavorites(_, let itemID, let mediaType):
             return [
-                "media_type": mediaItem.mediaType?.rawValue,
-                "media_id": mediaItem.id,
+                "media_type": mediaType,
+                "media_id": itemID,
                 "favorite": false
             ]
         case .moviesList(_), .movieDetails(_):
@@ -77,7 +77,7 @@ enum MediaEndpoint: Endpoint {
         switch self {
         case .trending(_, _), .favoriteMovies(_), .moviesList(_), .movieDetails(_):
                 .get
-        case .addToFavorites(_, _), .removeFromFavorites(_, _):
+        case .addToFavorites(_, _, _), .removeFromFavorites(_, _, _):
                 .post
         }
     }
@@ -92,7 +92,7 @@ enum MediaEndpoint: Endpoint {
               URLQueryItem(name: "page", value: "1"),
               URLQueryItem(name: "sort_by", value: "created_at.asc"),
             ]
-        case .addToFavorites(_, _), .removeFromFavorites(_, _):
+        case .addToFavorites(_, _, _), .removeFromFavorites(_, _, _):
             return nil
         case .moviesList(let page):
             return [

@@ -12,6 +12,7 @@ struct MediaPreviewCell: View {
     let media: MediaItem
     let loadPoster: (String) async -> UIImage?
     let onFavoritesTapped: () -> ()
+    
     @State private var image: UIImage?
     
     var body: some View {
@@ -34,12 +35,11 @@ struct MediaPreviewCell: View {
                         Spacer()
                         
                         Button {
-                            withAnimation {
-                                onFavoritesTapped()
-                            }
+                            onFavoritesTapped()
                         } label: {
                             Image(systemName: media.isInFavorites ?? false ? "star.fill" : "star")
                         }
+                        .buttonStyle(.plain)
                     }
                     
                     HStack() {

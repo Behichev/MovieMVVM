@@ -23,14 +23,15 @@ final class TabBarCoordinator {
     @ObservationIgnored var favoritesCoordinator: FavoritesCoordinator?
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
-    
-    init(repository: TMDBRepositoryProtocol) {
+    var mediaStorage: MoviesStorage
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
         self.repository = repository
+        self.mediaStorage = mediaStorage
         setupCoordinators()
     }
     
     var rootView: some View {
-        TabBarView(repository: repository, tabBarCoordinator: self)
+        TabBarView(repository: repository, mediaStorage: mediaStorage, tabBarCoordinator: self)
     }
     
     func selectTab(tab: TabBarItem) {
@@ -47,7 +48,7 @@ final class TabBarCoordinator {
     @MainActor
     var discoverTab: some View {
         if discoverCoordinator == nil {
-            discoverCoordinator = DiscoverCoordinator(repository: repository)
+            discoverCoordinator = DiscoverCoordinator(repository: repository, moviesStorage: mediaStorage)
         }
         return DiscoverCoordinatorView(coordinator: discoverCoordinator!)
     }
@@ -55,7 +56,7 @@ final class TabBarCoordinator {
     @MainActor
     var trendingTab: some View {
         if trendingCoordinator == nil {
-            trendingCoordinator = TrendingCoordinator(repository: repository)
+            trendingCoordinator = TrendingCoordinator(repository: repository, mediaStorage: mediaStorage)
         }
         return TrendingCoordinatorView(coordinator: trendingCoordinator!)
     }
@@ -63,7 +64,7 @@ final class TabBarCoordinator {
     @MainActor
     var favoritesTab: some View {
         if favoritesCoordinator == nil {
-            favoritesCoordinator = FavoritesCoordinator(repository: repository)
+            favoritesCoordinator = FavoritesCoordinator(repository: repository, mediaStorage: mediaStorage)
         }
         return FavoritesRootView(coordinator: favoritesCoordinator!)
     }
@@ -74,9 +75,9 @@ final class TabBarCoordinator {
     }
     
     private func setupCoordinators() {
-        favoritesCoordinator = FavoritesCoordinator(repository: repository)
-        discoverCoordinator = DiscoverCoordinator(repository: repository)
-        trendingCoordinator = TrendingCoordinator(repository: repository)
+        favoritesCoordinator = FavoritesCoordinator(repository: repository, mediaStorage: mediaStorage)
+        discoverCoordinator = DiscoverCoordinator(repository: repository, moviesStorage: mediaStorage)
+        trendingCoordinator = TrendingCoordinator(repository: repository, mediaStorage: mediaStorage)
     }
     
     private func coordinator(for selectedTab: TabBarItem) -> (any Coordinator)? {

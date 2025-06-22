@@ -12,18 +12,18 @@ final class RootCoordinator {
     
     private let authStore: AuthenticationStore
     private let repository: TMDBRepositoryProtocol
-    
+    private var mediaStorage: MoviesStorage
     private var tabBarCoordinator: TabBarCoordinator?
     
-    init(authStore: AuthenticationStore, repository: TMDBRepositoryProtocol) {
+    init(authStore: AuthenticationStore, repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
         self.authStore = authStore
         self.repository = repository
-        
+        self.mediaStorage = mediaStorage
         setupCoordinators()
     }
     
     private func setupCoordinators() {
-        tabBarCoordinator = TabBarCoordinator(repository: repository)
+        tabBarCoordinator = TabBarCoordinator(repository: repository, mediaStorage: mediaStorage)
     }
     
     @ViewBuilder @MainActor

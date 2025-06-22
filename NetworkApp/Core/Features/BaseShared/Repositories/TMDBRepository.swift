@@ -18,17 +18,13 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     private var authEndpoint: AuthEndpoint?
     private var token: TMDBToken?
     
-    private var dataSource: MoviesStorageProtocol
-    
     init(networkService: NetworkServiceProtocol,
          imageService: ImageLoaderService,
          keychainService: SecureStorable,
-         dataSource: MoviesStorageProtocol,
          errorManager: ErrorManager) {
         self.networkService = networkService
         self.imageService = imageService
         self.keychainService = keychainService
-        self.dataSource = dataSource
         self.errorManager = errorManager
         
         userID = String(keychainService.get(forKey: Constants.KeychainKeys.userID.rawValue, as: Int.self) ?? 0)
@@ -97,32 +93,15 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             throw error
         }
     }
-  //MARK: - Movies/Shows
+    //MARK: - Movies/Shows
     func fetchTrendingMedia() async throws -> [MediaItem] {
         do {
-            let localMedia = dataSource.getTrendingMovies()
-            
             let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.trending(mediaItem: .movie, timeWindow: TimeWindow.day.rawValue))
-            var mediaList = mediaResult.results
-            
-            let favoriteMedia = try await fetchFavoritesMovies()
-            
-            for item in favoriteMedia {
-                if let index = mediaList.firstIndex(where: {$0.id == item.id }) {
-                    mediaList[index].isInFavorites = true
-                }
-            }
-            
-            if localMedia != mediaList {
-                dataSource.saveTrendingMovies(mediaList)
-                return mediaList
-            } else {
-                return localMedia
-            }
-            
+            let mediaList = mediaResult.results
+            return mediaList
         } catch {
-            let localMedia = dataSource.getTrendingMovies()
-            return localMedia
+            await errorManager.showError("Can't load movies")
+            throw error
         }
     }
     
@@ -130,19 +109,12 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         do {
             let mediaResult: MediaResult = try await networkService.performRequest(from: MediaEndpoint.favoriteMovies(accountId: userID))
             var favoriteMediaList = mediaResult.results
-            let favoritesMediaListLocal = dataSource.getTrendingMovies()
             
             for (index, _) in favoriteMediaList.enumerated() {
                 favoriteMediaList[index].isInFavorites = true
             }
             
-            if favoritesMediaListLocal != favoriteMediaList {
-                dataSource.saveFavoriteMovies(favoriteMediaList)
-                return favoriteMediaList
-            } else {
-                return favoritesMediaListLocal
-            }
-            
+            return favoriteMediaList
         } catch {
             throw error
         }
@@ -150,20 +122,33 @@ final class TMDBRepository: TMDBRepositoryProtocol {
     
     func addMovieToFavorite(_ item: MediaItem) async throws {
         do {
-            try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, item: item))
-            dataSource.addToFavorites(item)
+            try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, itemID: item.id, itemType: item.mediaType?.rawValue ?? "movie"))
         } catch {
             await errorManager.showError("\(error.localizedDescription)")
             throw error
         }
     }
     
-    func deleteMovieFromFavorites(_ item: MediaItem) async throws {
+    func addMovieToFavorite(_ movieID: Int) async throws {
         do {
-            var deletedItem = item
-            deletedItem.mediaType = .movie
-            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, item: deletedItem))
-            dataSource.removeFromFavorites(item)
+            try await networkService.performPostRequest(from: MediaEndpoint.addToFavorites(accountId: userID, itemID: movieID, itemType: "movie"))
+        } catch {
+            await errorManager.showError("\(error.localizedDescription)")
+            throw error
+        }
+    }
+    
+    func removeMovieFromFavorites(_ movieID: Int) async throws {
+        do {
+            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, itemID: movieID, mediaType: "movie"))
+        } catch {
+            await errorManager.showError("\(error.localizedDescription)")
+        }
+    }
+    
+    func deleteMediaFromFavorites(_ item: MediaItem) async throws {
+        do {
+            try await networkService.performPostRequest(from: MediaEndpoint.removeFromFavorites(accountId: userID, itemID: item.id, mediaType: item.mediaType?.rawValue ?? "movie"))
         } catch {
             await errorManager.showError("\(error.localizedDescription)")
             throw error
@@ -179,7 +164,7 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         }
         do {
             if addItem.isInFavorites ?? false {
-                try await deleteMovieFromFavorites(addItem)
+                try await deleteMediaFromFavorites(addItem)
             } else {
                 try await addMovieToFavorite(addItem)
             }
@@ -205,20 +190,16 @@ final class TMDBRepository: TMDBRepositoryProtocol {
             return results
         } catch {
             await errorManager.showError("\(error.localizedDescription)")
-            return dataSource.getMoviesList()
+            throw error
         }
     }
     
     func fetchMovie(_ id: Int) async throws -> Movie {
-        if let movie = dataSource.getMovieDetail(id) {
-            return movie
-        } else {
-            do {
-                return try await networkService.performRequest(from: MediaEndpoint.movieDetails(movieID: "\(id)"))
-            } catch {
-                await errorManager.showError("\(error.localizedDescription)")
-                throw error
-            }
+        do {
+            return try await networkService.performRequest(from: MediaEndpoint.movieDetails(movieID: "\(id)"))
+        } catch {
+            await errorManager.showError("\(error.localizedDescription)")
+            throw error
         }
     }
     //MARK: - Media

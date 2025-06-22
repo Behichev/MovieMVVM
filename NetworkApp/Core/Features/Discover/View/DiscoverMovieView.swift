@@ -18,7 +18,7 @@ struct DiscoverMovieView: View {
             case .loading:
                 ProgressView()
             case .success:
-                if viewModel.movies.isEmpty {
+                if viewModel.movieStorage.moviesList.isEmpty {
                     emptyView
                 } else {
                     mainContent
@@ -53,7 +53,7 @@ private extension DiscoverMovieView {
     
     var mainContent: some View {
         LazyVStack {
-            ForEach(viewModel.movies, id: \.id) { movie in
+            ForEach(viewModel.movieStorage.moviesList, id: \.id) { movie in
                 
                     MediaPreviewCell(media: movie) { path in
                         try? await viewModel.setImage(path)
