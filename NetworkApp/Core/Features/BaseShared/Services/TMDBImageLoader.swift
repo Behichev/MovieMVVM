@@ -11,8 +11,8 @@ final class TMDBImageLoader: ImageLoaderService {
     
     private let cache = NSCache<NSURL, NSData>()
     
-    func prepareImagePath(from string: String) throws -> URL {
-        let stringURL = "https://image.tmdb.org/t/p/w200\(string)"
+    func prepareImagePath(from string: String, size: Int = 200) throws -> URL {
+        let stringURL = "https://image.tmdb.org/t/p/w\(size)\(string)"
         guard let url = URL(string: stringURL) else {
             throw URLError(.badURL)
         }

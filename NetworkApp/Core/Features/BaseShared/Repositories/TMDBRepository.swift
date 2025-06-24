@@ -203,9 +203,9 @@ final class TMDBRepository: TMDBRepositoryProtocol {
         }
     }
     //MARK: - Media
-    func loadImage(_ path: String) async throws -> Data {
+    func loadImage(_ path: String, size: Int = 200) async throws -> Data {
         do {
-            let url = try imageService.prepareImagePath(from: path)
+            let url = try imageService.prepareImagePath(from: path, size: size)
             let data = try await imageService.loadImageData(from: url)
             return data
         } catch {

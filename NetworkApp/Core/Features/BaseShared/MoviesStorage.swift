@@ -19,11 +19,14 @@ final class MoviesStorage: MoviesStorageProtocol {
         if let favoriteItem = item.isInFavorites {
             if favoriteItem {
                 removeFromFavorites(item)
+                print("remove")
             } else {
                 addToFavorites(item)
+                print("add")
             }
         } else {
             addToFavorites(item)
+            print("add from nil")
         }
     }
     

@@ -63,7 +63,7 @@ final class FavoritesViewModel {
     
     func setImage(_ path: String) async throws -> UIImage? {
         do {
-            let data = try await repository.loadImage(path)
+            let data = try await repository.loadImage(path, size: 200)
             let image = UIImage(data: data)
             return image
         } catch {

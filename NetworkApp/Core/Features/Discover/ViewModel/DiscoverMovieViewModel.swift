@@ -38,9 +38,7 @@ final class DiscoverMovieViewModel {
         }
         do {
             movieStorage.moviesList = try await repository.fetchMovieList(page: currentPage)
-            for item in movieStorage.favoritesMovies {
-                updateFavorite(item)
-            }
+            syncWithFavorites()
             isHasLoaded = true
             viewState = .success
         } catch {
@@ -64,9 +62,7 @@ final class DiscoverMovieViewModel {
             let uniqueMovies = newMovies.filter { !existingIDs.contains($0.id) }
             
             movieStorage.moviesList += uniqueMovies
-            for item in movieStorage.favoritesMovies {
-                updateFavorite(item)
-            }
+            syncWithFavorites()
         } catch {
             throw error
         }
@@ -89,7 +85,7 @@ final class DiscoverMovieViewModel {
     
     func setImage(_ path: String) async throws -> UIImage? {
         do {
-            let data = try await repository.loadImage(path)
+            let data = try await repository.loadImage(path, size: 200)
             let image = UIImage(data: data)
             return image
         } catch {
@@ -100,6 +96,12 @@ final class DiscoverMovieViewModel {
     private func updateFavorite(_ item: MediaItem) {
         if let index = movieStorage.moviesList.firstIndex(where: { $0.id == item.id }) {
             movieStorage.moviesList[index].isInFavorites = item.isInFavorites ?? false
+        }
+    }
+    
+    private func syncWithFavorites() {
+        for item in movieStorage.favoritesMovies {
+            updateFavorite(item)
         }
     }
 }
