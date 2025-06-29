@@ -41,12 +41,16 @@ final class MovieDetailsViewModel {
                 if let movie {
                     moviesStorage.moviesCache[index] = movie
                 }
+                print(movie)
+                
             } else {
                 movie = try await repository.fetchMovie(movieID)
                 movie?.isInFavorite = isFavorite
                 if let movie {
+                    print(movie)
                     moviesStorage.moviesCache.append(movie)
                 }
+                
             }
         } catch {
             throw error

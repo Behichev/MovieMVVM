@@ -55,8 +55,6 @@ final class MoviesStorage: MoviesStorageProtocol {
             moviesList[index].isInFavorites = false
         }
         
-        if let index = favoritesMovies.firstIndex(where: { $0.id == item.id }) {
-            favoritesMovies.remove(at: index)
-        }
+        favoritesMovies.removeAll(where: {$0.id == item.id })
     }
 }

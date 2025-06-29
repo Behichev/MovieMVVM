@@ -66,11 +66,17 @@ final class TrendingMediaViewModel {
     
     @MainActor
     func favoritesToggle(_ item: MediaItem) async throws {
+        let initialState = item.isInFavorites ?? false
+        
         do {
             mediaStorage.favoritesToggle(item)
             try await repository.favoritesToggle(item, mediaType: .movie)
         } catch {
-            mediaStorage.favoritesToggle(item)
+            if initialState {
+                mediaStorage.addToFavorites(item)
+            } else {
+                mediaStorage.removeFromFavorites(item)
+            }
             throw error
         }
     }
