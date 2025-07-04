@@ -17,7 +17,7 @@ struct TabBarView: View {
     
     let repository: TMDBRepositoryProtocol
     
-    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage, tabBarCoordinator: TabBarCoordinator) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorageProtocol, tabBarCoordinator: TabBarCoordinator) {
         self.repository = repository
         self.tabBarCoordinator = tabBarCoordinator
         self.trendingCoordinator = TrendingCoordinator(repository: repository, mediaStorage: mediaStorage)

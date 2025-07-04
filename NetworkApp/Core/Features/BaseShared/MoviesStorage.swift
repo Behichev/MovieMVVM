@@ -16,18 +16,11 @@ final class MoviesStorage: MoviesStorageProtocol {
     var moviesCache: [Movie] = []
     
     func favoritesToggle(_ item: MediaItem) {
-        if let favoriteItem = item.isInFavorites {
-            if favoriteItem {
+            if item.isInFavorites ?? false {
                 removeFromFavorites(item)
-                print("remove")
             } else {
                 addToFavorites(item)
-                print("add")
             }
-        } else {
-            addToFavorites(item)
-            print("add from nil")
-        }
     }
     
     func addToFavorites(_ item: MediaItem) {

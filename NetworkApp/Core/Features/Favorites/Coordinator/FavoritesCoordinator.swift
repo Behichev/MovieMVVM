@@ -20,7 +20,7 @@ final class FavoritesCoordinator: Coordinator {
     @ObservationIgnored var viewModel: FavoritesViewModel
     private var mediaStorage: MoviesStorageProtocol
  
-    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorageProtocol) {
         self.repository = repository
         self.mediaStorage = mediaStorage
         self.viewModel = FavoritesViewModel(repository: repository, mediaStorage: mediaStorage)

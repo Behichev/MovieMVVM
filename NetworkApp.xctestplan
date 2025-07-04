@@ -1,0 +1,36 @@
+{
+  "configurations" : [
+    {
+      "id" : "461CD938-51E6-4D66-A178-BEDD866DBE07",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:NetworkApp.xcodeproj",
+      "identifier" : "33D934A32DA729F000F395F3",
+      "name" : "NetworkApp"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:NetworkApp.xcodeproj",
+        "identifier" : "33D934B02DA729F200F395F3",
+        "name" : "NetworkAppTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:NetworkApp.xcodeproj",
+        "identifier" : "33F4C8082E15299900D7058F",
+        "name" : "NetworkAppSnapshotTest"
+      }
+    }
+  ],
+  "version" : 1
+}

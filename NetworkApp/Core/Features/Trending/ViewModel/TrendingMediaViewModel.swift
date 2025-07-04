@@ -10,7 +10,7 @@ import SwiftUI
 @Observable
 final class TrendingMediaViewModel {
     
-    var viewState: TrendingMediaViewState = .loading
+    var viewState: TrendingMediaViewState = .success
     var mediaStorage: MoviesStorageProtocol
     
     @ObservationIgnored var isLoaded = false
@@ -46,7 +46,7 @@ final class TrendingMediaViewModel {
                 
                 for item in favoritesMovies {
                     if let index = trendingMovies.firstIndex(where: { $0.id == item.id }) {
-                        trendingMovies[index].isInFavorites = item.isInFavorites ?? false
+                        trendingMovies[index].isInFavorites = item.isInFavorites
                     }
                 }
                 
@@ -66,13 +66,13 @@ final class TrendingMediaViewModel {
     
     @MainActor
     func favoritesToggle(_ item: MediaItem) async throws {
-        let initialState = item.isInFavorites ?? false
+        let initialState = item.isInFavorites
         
         do {
             mediaStorage.favoritesToggle(item)
             try await repository.favoritesToggle(item, mediaType: .movie)
         } catch {
-            if initialState {
+            if initialState ?? false {
                 mediaStorage.addToFavorites(item)
             } else {
                 mediaStorage.removeFromFavorites(item)
@@ -93,7 +93,7 @@ final class TrendingMediaViewModel {
     
     private func updateFavorite(_ item: MediaItem) {
         if let index = mediaStorage.trendingMovies.firstIndex(where: { $0.id == item.id }) {
-            mediaStorage.trendingMovies[index].isInFavorites = item.isInFavorites ?? false
+            mediaStorage.trendingMovies[index].isInFavorites = item.isInFavorites
         }
     }
 }

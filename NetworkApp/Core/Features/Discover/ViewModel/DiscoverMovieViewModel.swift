@@ -95,7 +95,7 @@ final class DiscoverMovieViewModel {
     
     private func updateFavorite(_ item: MediaItem) {
         if let index = movieStorage.moviesList.firstIndex(where: { $0.id == item.id }) {
-            movieStorage.moviesList[index].isInFavorites = item.isInFavorites ?? false
+            movieStorage.moviesList[index].isInFavorites = item.isInFavorites
         }
     }
     

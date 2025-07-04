@@ -19,8 +19,12 @@ struct TrendingMediaView: View {
                 ProgressView()
                     .tint(.accentColor)
             case .success:
-                mainContent
-                    .padding()
+                if viewModel.mediaStorage.trendingMovies.isEmpty {
+                    emptyView
+                } else {
+                    mainContent
+                        .padding()
+                }
             }
         }
         .navigationTitle("Trending")
@@ -60,10 +64,21 @@ private extension TrendingMediaView {
             }
         }
     }
+    
+    var emptyView: some View {
+        VStack(alignment: .center) {
+            Spacer()
+            Image(systemName: "movieclapper")
+                .font(.largeTitle)
+            Text("Trending media")
+            Spacer()
+        }
+    }
 }
 
 #Preview {
-    let repository = TMDBRepository(networkService: NetworkService(), imageService: TMDBImageLoader(), keychainService: KeychainService(), errorManager: ErrorManager())
-    let vm = TrendingMediaViewModel(repository: repository, mediaStorage: MoviesStorage())
+    let repository = MockRepository()
+    let movieStorage = MockMovieStorage()
+    let vm = TrendingMediaViewModel(repository: repository, mediaStorage: movieStorage)
     TrendingMediaView(viewModel: vm, onMediaTapped: { _ in print("sdsd") })
 }

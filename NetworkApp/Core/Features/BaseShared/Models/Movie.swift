@@ -34,7 +34,7 @@ struct Movie: Codable, Identifiable, Hashable {
     let video: Bool
     let voteAverage: Double
     let voteCount: Int
-    var isInFavorite: Bool?
+    var isInFavorite: Bool? = false
 }
 
 struct CollectionInfo: Codable, Hashable, Equatable {

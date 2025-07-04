@@ -34,7 +34,7 @@ struct MediaItem: Codable, Identifiable, Equatable {
     let firstAirDate: String?
     let releaseDate: String?
     let video: Bool?
-    var isInFavorites: Bool?
+    var isInFavorites: Bool? = false
     
     enum MediaType: String, Codable {
         case movie

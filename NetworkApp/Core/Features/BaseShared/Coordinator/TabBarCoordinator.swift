@@ -23,8 +23,8 @@ final class TabBarCoordinator {
     @ObservationIgnored var favoritesCoordinator: FavoritesCoordinator?
     
     @ObservationIgnored let repository: TMDBRepositoryProtocol
-    var mediaStorage: MoviesStorage
-    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
+    var mediaStorage: MoviesStorageProtocol
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorageProtocol) {
         self.repository = repository
         self.mediaStorage = mediaStorage
         setupCoordinators()

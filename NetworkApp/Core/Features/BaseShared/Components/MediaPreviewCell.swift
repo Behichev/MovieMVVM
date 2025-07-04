@@ -45,7 +45,7 @@ struct MediaPreviewCell: View {
                     HStack() {
                         Image(systemName: "calendar")
                             .font(.caption2)
-                        Text(media.releaseDate?.formattedDate() ?? media.firstAirDate?.formattedDate() ?? "")
+                        Text(DateFormatterManager.shared.formattedDate(from: media.releaseDate ?? media.firstAirDate ?? "") ?? "")
                             .font(.footnote)
                         Spacer()
                     }

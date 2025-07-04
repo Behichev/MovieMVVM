@@ -14,13 +14,12 @@ final class NetworkAppTests: XCTestCase {
         let repo = MockRepository()
         let storage = MoviesStorage()
         var item = MockHelper.mockMediaItem
-        item.isInFavorites = nil
         storage.trendingMovies = [item]
         let viewModel = TrendingMediaViewModel(repository: repo, mediaStorage: storage)
         
         try await viewModel.favoritesToggle(item)
         
-        XCTAssertTrue(storage.trendingMovies[0].isInFavorites ?? false)
+        XCTAssertTrue(storage.trendingMovies[0].isInFavorites )
         XCTAssertEqual(storage.favoritesMovies.count, 1)
         XCTAssertEqual(storage.favoritesMovies[0].id, item.id)
     }
@@ -33,8 +32,8 @@ final class NetworkAppTests: XCTestCase {
         
         storage.addToFavorites(item)
         
-        XCTAssertTrue(storage.trendingMovies[0].isInFavorites!)
-        XCTAssertTrue(storage.moviesList[0].isInFavorites!)
+        XCTAssertTrue(storage.trendingMovies[0].isInFavorites)
+        XCTAssertTrue(storage.moviesList[0].isInFavorites)
         XCTAssertEqual(storage.favoritesMovies.count, 1)
     }
     
@@ -61,7 +60,7 @@ final class NetworkAppTests: XCTestCase {
             try await viewModel.favoritesToggle(storage.trendingMovies[0])
             XCTFail("Should throw error")
         } catch {
-            XCTAssertFalse(storage.trendingMovies[0].isInFavorites ?? true)
+            XCTAssertFalse(storage.trendingMovies[0].isInFavorites)
             XCTAssertTrue(storage.favoritesMovies.isEmpty)
         }
     }

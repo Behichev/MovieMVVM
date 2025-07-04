@@ -41,7 +41,6 @@ final class MovieDetailsViewModel {
                 if let movie {
                     moviesStorage.moviesCache[index] = movie
                 }
-                print(movie)
                 
             } else {
                 movie = try await repository.fetchMovie(movieID)
@@ -95,6 +94,6 @@ final class MovieDetailsViewModel {
     }
     
     private func convertMovieToMediaItem() -> MediaItem {
-        MediaItem(id: movieID, name: nil, originalName: nil, title: nil, originalTitle: nil, overview: "", posterPath: nil, backdropPath: nil, adult: false, originalLanguage: "", genreIds: [], popularity: 0, voteAverage: 0, voteCount: 0, originCountry: nil, firstAirDate: nil, releaseDate: nil, video: nil, isInFavorites: movie?.isInFavorite)
+        MediaItem(id: movieID, name: nil, originalName: nil, title: nil, originalTitle: nil, overview: "", posterPath: nil, backdropPath: nil, adult: false, originalLanguage: "", genreIds: [], popularity: 0, voteAverage: 0, voteCount: 0, originCountry: nil, firstAirDate: nil, releaseDate: nil, video: nil, isInFavorites: (movie?.isInFavorite)!)
     }
 }

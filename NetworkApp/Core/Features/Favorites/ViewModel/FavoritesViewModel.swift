@@ -11,12 +11,12 @@ import SwiftUI
 final class FavoritesViewModel {
     
     var viewState: TrendingViewState = .loading
-    var mediaStorage: MoviesStorage
+    var mediaStorage: MoviesStorageProtocol
     
     @ObservationIgnored var isLoaded = false
     @ObservationIgnored let repository: TMDBRepositoryProtocol
     
-    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorage) {
+    init(repository: TMDBRepositoryProtocol, mediaStorage: MoviesStorageProtocol) {
         self.repository = repository
         self.mediaStorage = mediaStorage
     }
