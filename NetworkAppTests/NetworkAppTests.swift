@@ -19,7 +19,7 @@ final class NetworkAppTests: XCTestCase {
         
         try await viewModel.favoritesToggle(item)
         
-        XCTAssertTrue(storage.trendingMovies[0].isInFavorites )
+        XCTAssertTrue((storage.trendingMovies[0].isInFavorites ?? false))
         XCTAssertEqual(storage.favoritesMovies.count, 1)
         XCTAssertEqual(storage.favoritesMovies[0].id, item.id)
     }
@@ -32,8 +32,8 @@ final class NetworkAppTests: XCTestCase {
         
         storage.addToFavorites(item)
         
-        XCTAssertTrue(storage.trendingMovies[0].isInFavorites)
-        XCTAssertTrue(storage.moviesList[0].isInFavorites)
+        XCTAssertTrue(storage.trendingMovies[0].isInFavorites ?? false)
+        XCTAssertTrue(storage.moviesList[0].isInFavorites ?? false)
         XCTAssertEqual(storage.favoritesMovies.count, 1)
     }
     
@@ -60,7 +60,7 @@ final class NetworkAppTests: XCTestCase {
             try await viewModel.favoritesToggle(storage.trendingMovies[0])
             XCTFail("Should throw error")
         } catch {
-            XCTAssertFalse(storage.trendingMovies[0].isInFavorites)
+            XCTAssertFalse(storage.trendingMovies[0].isInFavorites ?? false)
             XCTAssertTrue(storage.favoritesMovies.isEmpty)
         }
     }

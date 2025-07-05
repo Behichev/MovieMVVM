@@ -20,6 +20,7 @@ struct TrendingMediaView: View {
                     .tint(.accentColor)
             case .success:
                 if viewModel.mediaStorage.trendingMovies.isEmpty {
+                    
                     emptyView
                 } else {
                     mainContent
@@ -66,13 +67,20 @@ private extension TrendingMediaView {
     }
     
     var emptyView: some View {
-        VStack(alignment: .center) {
-            Spacer()
+        VStack(alignment: .center, spacing: 16) {
+            Rectangle()
+                .foregroundStyle(.clear)
+                .frame(height: 248)
+            
             Image(systemName: "movieclapper")
-                .font(.largeTitle)
+                .font(.system(size: 92))
+                
             Text("Trending media")
-            Spacer()
+                .font(.largeTitle)
+                .fontWeight(.bold)
+                .fontDesign(.rounded)
         }
+        
     }
 }
 

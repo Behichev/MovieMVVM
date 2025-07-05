@@ -8,7 +8,7 @@
 import Foundation
 
 @Observable
-final class ErrorManager {
+class ErrorManager {
     
     var currentError: String? = nil
     var showError: Bool = false
@@ -29,7 +29,7 @@ final class ErrorManager {
         }
     }
     
-    @MainActor
+    
     func hideError() {
         hideTimer?.invalidate()
         currentError = nil

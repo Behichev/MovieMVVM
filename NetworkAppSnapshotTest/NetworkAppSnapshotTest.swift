@@ -84,5 +84,48 @@ final class NetworkAppSnapshotTest: XCTestCase {
                                              )
         )
     }
+    
+    func test_loginView_normalState() {
+        let repository = MockRepository()
+        let view = LoginView(repository: repository)
+            .environment(AuthenticationStore(repository: repository, keychainService: KeychainService()))
+        assertSnapshot(of: view, as: .image(precision: 1 ,
+                                              layout: .device(config: .iPhone13),
+                                              traits: UITraitCollection(userInterfaceStyle: .light)
+                                             )
+        )
+    }
+    
+    func test_loginView_invalidCredentials() {
+        let repository = MockRepository()
+        let setupView = LoginView(repository: repository)
+        setupView.viewModel.credentials = Credentials(username: "Invalid", password: "Credentials")
+        setupView.viewModel.isInvalidCredentials = true
+        
+        let view = setupView
+            .environment(AuthenticationStore(repository: repository, keychainService: KeychainService()))
+        
+        assertSnapshot(of: view, as: .image(precision: 1 ,
+                                              layout: .device(config: .iPhone13),
+                                              traits: UITraitCollection(userInterfaceStyle: .light)
+                                             )
+        )
+    }
+    
+    func test_loginView_showPassword() {
+        let repository = MockRepository()
+        let setupView = LoginView(repository: repository)
+        setupView.viewModel.credentials = Credentials(username: "UserName", password: "Password")
+        setupView.viewModel.isPasswordVisible = true
+        
+        let view = setupView
+            .environment(AuthenticationStore(repository: repository, keychainService: KeychainService()))
+        
+        assertSnapshot(of: view, as: .image(precision: 1 ,
+                                              layout: .device(config: .iPhone13),
+                                              traits: UITraitCollection(userInterfaceStyle: .light)
+                                             )
+        )
+    }
 }
 
